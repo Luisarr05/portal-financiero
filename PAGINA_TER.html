@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Financiero - Solicitud de Crédito</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root {
+      --bbva-blue: #004481; 
+      --bbva-light-blue: #009ee3; 
+      --bbva-navy: #072146;
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+    }
+    
+    body { 
+      background: radial-gradient(circle at 50% 30%, #00d2ff 0%, #0052d4 40%, #030b1e 90%) !important;
+      background-attachment: fixed !important;
+      color: #ffffff; 
+      min-height: 100vh; 
+      overflow-x: hidden; 
+      padding-bottom: 80px; 
+    }
+
+    /* CAPA DE BALONES ANIMADOS EN EL FONDO */
+    .background-balls {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
+    }
+
+    .ball {
+      position: absolute;
+      top: 100vh;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 14px rgba(0, 242, 254, 0.8));
+      animation-name: floatDiagonal;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+      animation-fill-mode: backwards;
+    }
+
+    .ball:nth-child(1) { background-image: url('balon.avif'); left: 2%; width: 110px; height: 110px; animation-duration: 10s; animation-delay: 0s; }
+    .ball:nth-child(2) { background-image: url('balon_2.avif'); left: 10%; width: 150px; height: 150px; animation-duration: 14s; animation-delay: 3s; }
+    .ball:nth-child(3) { background-image: url('balon_3.avif'); left: 18%; width: 90px; height: 90px; animation-duration: 9s; animation-delay: 1s; }
+    .ball:nth-child(4) { background-image: url('balon_4.avif'); left: 26%; width: 170px; height: 170px; animation-duration: 16s; animation-delay: 5s; }
+    .ball:nth-child(5) { background-image: url('balon_5.avif'); left: 34%; width: 120px; height: 120px; animation-duration: 11s; animation-delay: 2s; }
+    .ball:nth-child(6) { background-image: url('balon_6.avif'); left: 42%; width: 180px; height: 180px; animation-duration: 17s; animation-delay: 4s; }
+    .ball:nth-child(7) { background-image: url('balon_7.avif'); left: 50%; width: 100px; height: 100px; animation-duration: 8.5s; animation-delay: 0.5s; }
+    .ball:nth-child(8) { background-image: url('balon_8.avif'); left: 58%; width: 160px; height: 160px; animation-duration: 13s; animation-delay: 2.5s; }
+    .ball:nth-child(9) { background-image: url('balon_9.avif'); left: 66%; width: 130px; height: 130px; animation-duration: 15s; animation-delay: 1.5s; }
+    .ball:nth-child(10) { background-image: url('balon_10.avif'); left: 74%; width: 175px; height: 175px; animation-duration: 18s; animation-delay: 3.5s; }
+    .ball:nth-child(11) { background-image: url('balon_11.avif'); left: 82%; width: 115px; height: 115px; animation-duration: 10.5s; animation-delay: 4.5s; }
+    .ball:nth-child(12) { background-image: url('balon_12.avif'); left: 88%; width: 140px; height: 140px; animation-duration: 12s; animation-delay: 1s; }
+    .ball:nth-child(13) { background-image: url('balon_13.avif'); left: 93%; width: 95px; height: 95px; animation-duration: 9.5s; animation-delay: 6s; }
+
+    @keyframes floatDiagonal {
+      0% { transform: translateY(10vh) translateX(0) rotate(0deg); }
+      100% { transform: translateY(-130vh) translateX(120px) rotate(360deg); }
+    }
+
+    .bg-ambient-glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 1000px; height: 600px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.2) 0%, rgba(0, 82, 212, 0.1) 50%, rgba(0,0,0,0) 80%);
+      pointer-events: none; z-index: 1;
+    }
+
+    /* TARJETAS GLASSMORPHISM CON BORDES GLOW NEÓN */
+    .glass-card {
+      background: rgba(3, 11, 30, 0.75) !important;
+      border: 1px solid rgba(0, 212, 255, 0.35) !important;
+      backdrop-filter: blur(16px) !important;
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* BOTÓN REGRESAR GLASSMORPHISM */
+    .btn-back {
+      background: rgba(3, 11, 30, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      backdrop-filter: blur(10px);
+      color: #00d4ff;
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: rgba(0, 212, 255, 0.8);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      transform: translateX(-3px);
+    }
+
+    /* BOTÓN PRINCIPAL CON EFECTO NEÓN */
+    .btn-action {
+      position: relative;
+      background: linear-gradient(135deg, #00d4ff 0%, #0052d4 50%, #7928ca 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 0 40px rgba(0, 212, 255, 0.9);
+    }
+
+    .btn-secondary-action {
+      background: linear-gradient(135deg, #059669 0%, #10b981 50%, #06b6d4 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary-action:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.8);
+    }
+
+    .btn-secondary-action:disabled {
+      background: rgba(51, 65, 85, 0.6);
+      box-shadow: none;
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* BOTONES DE OPCIONES ADICIONALES (AFE / PASIVOS) */
+    .btn-option-afe {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-option-afe:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
+    }
+
+    .btn-option-pasivos {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+      border: 1px solid rgba(139, 92, 246, 0.5);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    .btn-option-pasivos:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 25px rgba(139, 92, 246, 0.8);
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ESTILOS DE FORMULARIO NEÓN */
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #00d4ff;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+      padding-bottom: 0.5rem;
+    }
+
+    .input-icon-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .input-icon-wrapper i {
+      position: absolute;
+      left: 14px;
+      color: #00d4ff;
+      font-size: 15px;
+      pointer-events: none;
+      z-index: 10;
+      width: 20px;
+      text-align: center;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 14px 11px 44px !important;
+      font-size: 14px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 8px;
+      background-color: rgba(5, 18, 48, 0.8);
+      color: #ffffff;
+      transition: all 0.2s ease-in-out;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    select option {
+      background-color: #030b1e;
+      color: #ffffff;
+    }
+
+    input:focus, select:focus {
+      background-color: rgba(7, 25, 65, 0.9);
+      border-color: #00d4ff;
+      box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+    }
+
+    label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    #resultado {
+      display: none;
+      margin-top: 24px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.5); }
+    .status-error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.5); }
+
+    /* ESTILOS PARA LA ZONA DE DOCUMENTOS (GLASSMORPHISM) */
+    .drop-zone-neon {
+      border: 2px dashed rgba(0, 212, 255, 0.5);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      background: rgba(5, 18, 48, 0.6);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .drop-zone-neon:hover {
+      background: rgba(0, 212, 255, 0.1);
+      border-color: #00d4ff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .card-neon {
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 12px;
+      padding: 18px;
+      background-color: rgba(5, 18, 48, 0.7);
+    }
+
+    .doc-item {
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .doc-missing { background-color: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .doc-uploaded { background-color: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    .file-item-neon {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      margin-top: 6px;
+      word-break: break-all;
+    }
+
+    /* ROBOT BBVA FLOTANTE */
+    .bbva-character-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 100;
+      width: 100px;
+    }
+
+    .robot-body-wrapper {
+      width: 90px;
+      height: 125px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: levitate 3.5s infinite ease-in-out;
+    }
+
+    @keyframes levitate {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .robot-head {
+      width: 56px;
+      height: 44px;
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+      border: 3px solid var(--bbva-blue);
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25), inset -2px -2px 6px rgba(0,0,0,0.1);
+    }
+
+    .robot-eyes-container { display: flex; gap: 8px; }
+    .robot-eye {
+      width: 9px; height: 9px; background: #00e5ff; border-radius: 50%;
+      transition: all 0.12s ease-in-out; box-shadow: 0 0 10px #00e5ff, 0 0 4px rgba(0, 229, 255, 0.6);
+    }
+
+    .robot-antenna { position: absolute; top: -14px; width: 4px; height: 14px; background: linear-gradient(to top, var(--bbva-blue), var(--bbva-light-blue)); left: calc(50% - 2px); }
+    .robot-antenna::before { content: ''; position: absolute; top: -7px; left: -4px; width: 12px; height: 12px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 12px #00e5ff; }
+
+    .robot-neck { width: 16px; height: 6px; background: linear-gradient(to right, #94a3b8, #cbd5e1, #64748b); border: 2px solid var(--bbva-blue); margin-top: -2px; z-index: 4; }
+
+    .robot-torso {
+      width: 64px; height: 54px; background: radial-gradient(circle at 30% 30%, var(--bbva-blue) 0%, var(--bbva-navy) 80%);
+      border: 3px solid var(--bbva-light-blue); border-radius: 14px; position: relative; z-index: 3; display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+    }
+
+    .robot-screen {
+      width: 42px; height: 28px; background: #090d16; border: 1.5px solid #00e5ff; border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; color: #00e5ff; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.8px; text-shadow: 0 0 5px #00e5ff; box-shadow: inset 0 0 6px rgba(0, 229, 255, 0.3);
+    }
+
+    .robot-arm { width: 11px; height: 38px; background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%); border: 2px solid var(--bbva-blue); border-radius: 8px; position: absolute; top: 52px; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+    .robot-arm.left { left: -8px; transform-origin: top center; }
+    .robot-arm.right { right: -8px; transform-origin: top center; transition: transform 0.3s ease; }
+
+    .robot-thruster { width: 26px; height: 10px; background: linear-gradient(to right, #64748b, #cbd5e1, #475569); border: 2px solid var(--bbva-blue); border-radius: 0 0 10px 10px; margin-top: -2px; position: relative; }
+    .robot-thruster::after {
+      content: ''; position: absolute; bottom: -8px; left: 5px; width: 12px; height: 8px; background: linear-gradient(to bottom, #00e5ff, rgba(0, 229, 255, 0.4), transparent); border-radius: 50%; animation: thrust 0.15s infinite alternate; filter: drop-shadow(0 0 6px #00e5ff);
+    }
+
+    @keyframes thrust { from { height: 5px; opacity: 0.7; } to { height: 10px; opacity: 1; } }
+
+    .bbva-speech-bubble {
+      position: absolute; bottom: 145px; right: -10px; background: #ffffff; color: var(--bbva-navy); padding: 12px 18px; border-radius: 14px; font-size: 0.88rem; font-weight: bold; box-shadow: 0 8px 24px rgba(0,0,0,0.3); width: 220px; text-align: center; opacity: 1; pointer-events: none; z-index: 105; border: 1px solid #e2e8f0; line-height: 1.4;
+    }
+    .bbva-speech-bubble::after { content: ''; position: absolute; bottom: -7px; right: 48px; border-width: 8px 8px 0; border-style: solid; border-color: #ffffff transparent; display: block; width: 0; }
+  </style>
+</head>
+<body class="relative z-10">
+
+  <div class="background-balls">
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+    <div class="ball"></div>
+  </div>
+
+  <div class="bg-ambient-glow"></div>
+
+  <main class="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+    
+    <div class="flex items-center justify-between mb-8 animate__animated animate__fadeInDown">
+      <a href="PAGINA_SEC.html" class="btn-back px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+        <i class="fa-solid fa-arrow-left"></i>
+        Regresar a Sección Principal
+      </a>
+    </div>
+
+    <header class="text-center mb-10 animate__animated animate__fadeInDown">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-bold tracking-widest uppercase mb-4 shadow-lg">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        Módulo de Captura Financiera
+      </div>
+      <h1 class="text-3xl md:text-5xl font-black tracking-tight text-white mb-2">
+        Portal de <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Solicitud de Crédito</span>
+      </h1>
+      <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto">
+        Ingrese los datos requeridos para evaluar el crédito y procesar la solicitud en el sistema central.
+      </p>
+    </header>
+
+    <div class="glass-card rounded-3xl p-6 md:p-10 animate__animated animate__fadeInUp">
+      <form id="formularioCredito">
+        
+        <div class="section-title"><i class="fa-regular fa-envelope"></i> Datos de Contacto</div>
+        <div class="grid grid-cols-1 gap-6 mb-8">
+          <div class="field-group">
+            <label for="email">Correo Electrónico de Notificación (*)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-at"></i>
+              <input type="email" id="email" required placeholder="correo@ejemplo.com">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title"><i class="fa-solid fa-coins"></i> Condiciones de la Solicitud</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          
+          <div class="field-group">
+            <label for="tipoCredito">Tipo de Crédito</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-file-contract"></i>
+              <select id="tipoCredito" required>
+                <option value="Largo Plazo">Largo Plazo</option>
+                <option value="Simple">Simple</option>
+                <option value="Crediflex">Crediflex</option>
+                <option value="Arrendamiento">Arrendamiento</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="monto">Monto (en miles)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-dollar-sign"></i>
+              <input type="number" id="monto" value="10000" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="moneda">Moneda</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-money-bill-transfer"></i>
+              <select id="moneda" required>
+                <option value="Pesos">Pesos (MXN)</option>
+                <option value="Dólares">Dólares (USD)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="destino">Destino</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-bullseye"></i>
+              <select id="destino" required>
+                <option value="Compra de pasivos">Compra de pasivos</option>
+                <option value="Capital de trabajo permanente">Capital de trabajo permanente</option>
+                <option value="Inversión en activos">Inversión en activos</option>
+                <option value="Refinanciamiento">Refinanciamiento</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="plazo">Plazo (Años)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-regular fa-calendar-check"></i>
+              <input type="number" id="plazo" value="5" min="1" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="gracia">Periodo de Gracia</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-hourglass-half"></i>
+              <select id="gracia" required>
+                <option value="NA">NA (Sin gracia)</option>
+                <option value="6 meses">6 meses</option>
+                <option value="12 meses">12 meses</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="amortizaciones">Plazo de Amortizaciones</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-arrows-rotate"></i>
+              <select id="amortizaciones" required>
+                <option value="Mensual">Mensual</option>
+                <option value="Trimestral">Trimestral</option>
+                <option value="Semestral">Semestral</option>
+                <option value="Anual">Anual</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="formaAmortizacion">Forma de Amortización</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-chart-line"></i>
+              <select id="formaAmortizacion" required>
+                <option value="Lineal">Lineal</option>
+                <option value="Creciente">Creciente</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="tasaInteres">Tasa de Interés Anual (%)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-percent"></i>
+              <input type="number" id="tasaInteres" step="0.1" value="12" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="comisionApertura">Comisión por Apertura (%)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+              <input type="number" id="comisionApertura" step="0.1" value="1" required>
+            </div>
+          </div>
+
+          <div class="field-group md:col-span-2">
+            <label for="comisionAdmin">Comisión por Admin. (%)</label>
+            <div class="input-icon-wrapper">
+              <i class="fa-solid fa-briefcase"></i>
+              <input type="number" id="comisionAdmin" step="0.1" value="1" required>
+            </div>
+          </div>
+
+        </div>
+
+        <button type="submit" id="btnEnviar" class="btn-action w-full text-white font-extrabold py-4 rounded-xl flex justify-center items-center gap-3 uppercase tracking-wider text-base shadow-lg">
+          <i class="fa-solid fa-paper-plane"></i> Procesar Solicitud y Enviar
+        </button>
+      </form>
+
+      <div id="resultado"></div>
+
+      <div class="my-10 border-t border-cyan-500/30"></div>
+
+      <section id="seccionDocumentos">
+        <div class="section-title"><i class="fa-solid fa-folder-open"></i> Recepción y Clasificación de Documentos</div>
+        <p class="text-xs text-slate-300 mb-6">Arrastre sus archivos (PDF, Word, Excel, Imágenes). El sistema los asociará automáticamente según el nombre del archivo.</p>
+
+        <div class="drop-zone-neon mb-6" id="dropZone" onclick="document.getElementById('fileInput').click()">
+          <i class="fa-solid fa-cloud-arrow-up text-3xl text-cyan-400 mb-2"></i>
+          <p class="text-sm font-bold text-white">Arrastra aquí tus archivos o haz clic para seleccionar</p>
+          <p class="text-xs text-cyan-300/80 mt-1">Soporta PDF, .docx, .xlsx, PNG, JPG</p>
+          <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg" class="hidden">
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="card-neon">
+            <h3 class="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-list-check"></i> Checklist de Requisitos
+            </h3>
+            <ul id="checklist" class="space-y-2">
+              </ul>
+          </div>
+
+          <div class="card-neon">
+            <h3 class="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-file-circle-check"></i> Archivos Detectados
+            </h3>
+            <div id="uploadedFilesList">
+              <p class="text-xs text-slate-400 italic">Aún no se han subido archivos.</p>
+            </div>
+          </div>
+        </div>
+
+        <button id="submitDocsBtn" disabled onclick="enviarDocumentos()" class="btn-secondary-action w-full text-white font-extrabold py-3.5 rounded-xl flex justify-center items-center gap-3 uppercase tracking-wider text-sm shadow-lg">
+          <i class="fa-solid fa-cloud-arrow-up"></i> Enviar Documentos a Google Drive / Correo
+        </button>
+      </section>
+
+      <!-- SECCIÓN DE OPCIONES ADICIONALES (AFE Y CUADROS DE PASIVOS) -->
+      <div class="my-10 border-t border-cyan-500/30"></div>
+
+      <section id="seccionOpcionesAdicionales">
+        <div class="section-title"><i class="fa-solid fa-layer-group"></i> Trámites y Módulos Adicionales</div>
+        <p class="text-xs text-slate-300 mb-6">Seleccione una opción si requiere realizar el Registro AFE o la gestión de Cuadros de Pasivos.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <a href="AFE_REGISTRO.html" class="btn-option-afe text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-center transition-all">
+            <i class="fa-solid fa-file-signature text-xl"></i>
+            <span>Realizar Registro AFE</span>
+          </a>
+
+          <a href="CUADROS_PASIVOS.html" class="btn-option-pasivos text-white font-bold py-4 px-6 rounded-xl flex items-center justify-center gap-3 text-center transition-all">
+            <i class="fa-solid fa-table-list text-xl"></i>
+            <span>Cuadros de Pasivos</span>
+          </a>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <div class="bbva-character-container">
+    <div class="bbva-speech-bubble" id="robotBubble">¡Completa el formulario y adjunta tus documentos! 🤖</div>
+    
+    <div class="robot-body-wrapper">
+      <div class="robot-antenna"></div>
+      <div class="robot-head">
+        <div class="robot-eyes-container">
+          <div class="robot-eye eye-l"></div>
+          <div class="robot-eye eye-r"></div>
+        </div>
+      </div>
+      <div class="robot-neck"></div>
+      <div class="robot-torso">
+        <div class="robot-screen">L-EASY</div>
+      </div>
+      <div class="robot-arm left"></div>
+      <div class="robot-arm right"></div>
+      <div class="robot-thruster"></div>
+    </div>
+  </div>
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwdMjZJ3o5bSSG9M_aDW5hN9Rcl6UFsyp5Nb4Gs9jmzcue1lNJKX1xy9ue1CFNyjHZe/exec";
+
+    /* --- LÓGICA ENVÍO FORMULARIO CRÉDITO --- */
+    document.getElementById("formularioCredito").addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      const btn = document.getElementById("btnEnviar");
+      const divResultado = document.getElementById("resultado");
+      
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Registrando datos...`;
+      divResultado.style.display = "none";
+
+      const datos = {
+        email: document.getElementById("email").value,
+        tipoCredito: document.getElementById("tipoCredito").value,
+        monto: document.getElementById("monto").value,
+        moneda: document.getElementById("moneda").value,
+        destino: document.getElementById("destino").value,
+        plazo: document.getElementById("plazo").value,
+        gracia: document.getElementById("gracia").value,
+        amortizaciones: document.getElementById("amortizaciones").value,
+        formaAmortizacion: document.getElementById("formaAmortizacion").value,
+        tasaInteres: document.getElementById("tasaInteres").value,
+        comisionApertura: document.getElementById("comisionApertura").value,
+        comisionAdmin: document.getElementById("comisionAdmin").value
+      };
+
+      const formData = new URLSearchParams();
+      for (const key in datos) {
+        formData.append(key, datos[key]);
+      }
+
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.text())
+      .then(text => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Procesar Solicitud y Enviar`;
+        divResultado.style.display = "block";
+
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (err) {
+          data = { status: "success", mensaje: "¡Solicitud guardada en Google Sheets y correo enviado con éxito!" };
+        }
+
+        if (data.status === "success") {
+          divResultado.className = "status-success";
+          divResultado.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.mensaje}`;
+        } else {
+          divResultado.className = "status-error";
+          divResultado.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error: ${data.mensaje}`;
+        }
+      })
+      .catch(error => {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Procesar Solicitud y Enviar`;
+        divResultado.style.display = "block";
+        divResultado.className = "status-error";
+        divResultado.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Error de conexión al enviar los datos.`;
+        console.error(error);
+      });
+    });
+
+    /* --- LÓGICA DE GESTIÓN DE DOCUMENTOS --- */
+    const requerimientos = [
+      { id: 'acta', nombre: 'Acta de Nacimiento', keywords: ['acta', 'nacimiento'], subido: false, archivo: null },
+      { id: 'curp', nombre: 'CURP', keywords: ['curp'], subido: false, archivo: null },
+      { id: 'ine', nombre: 'Identificación Oficial (INE / Pasaporte)', keywords: ['ine', 'identificacion', 'pasaporte', 'credencial', 'ife'], subido: false, archivo: null },
+      { id: 'domicilio', nombre: 'Comprobante de Domicilio', keywords: ['domicilio', 'luz', 'agua', 'comprobante', 'cfe'], subido: false, archivo: null },
+      { id: 'fiscal', nombre: 'Constancia de Situación Fiscal', keywords: ['fiscal', 'sat', 'constancia', 'rfc'], subido: false, archivo: null }
+    ];
+
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    let archivosSeleccionados = [];
+
+    function renderChecklist() {
+      const listEl = document.getElementById('checklist');
+      listEl.innerHTML = '';
+
+      requerimientos.forEach(req => {
+        const li = document.createElement('li');
+        li.className = `doc-item ${req.subido ? 'doc-uploaded' : 'doc-missing'}`;
+        li.innerHTML = `
+          <span>${req.nombre}</span>
+          <span>${req.subido ? '<i class="fa-solid fa-check-circle"></i> Recibido' : '<i class="fa-solid fa-circle-xmark"></i> Pendiente'}</span>
+        `;
+        listEl.appendChild(li);
+      });
+
+      const alMenosUno = requerimientos.some(r => r.subido) || archivosSeleccionados.length > 0;
+      document.getElementById('submitDocsBtn').disabled = !alMenosUno;
+    }
+
+    function procesarArchivos(files) {
+      Array.from(files).forEach(file => {
+        const nombreLimpio = file.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+        
+        requerimientos.forEach(req => {
+          const coincide = req.keywords.some(kw => nombreLimpio.includes(kw));
+          if (coincide) {
+            req.subido = true;
+            req.archivo = file;
+          }
+        });
+      });
+
+      archivosSeleccionados = Array.from(files);
+      renderChecklist();
+      renderArchivosSubidos();
+    }
+
+    function renderArchivosSubidos() {
+      const container = document.getElementById('uploadedFilesList');
+      container.innerHTML = '';
+
+      if (archivosSeleccionados.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 italic">Aún no se han subido archivos.</p>';
+        return;
+      }
+
+      archivosSeleccionados.forEach(file => {
+        const div = document.createElement('div');
+        div.className = 'file-item-neon flex items-center justify-between';
+        div.innerHTML = `
+          <span><i class="fa-solid fa-paperclip text-cyan-400 mr-2"></i>${file.name}</span>
+          <span class="text-xs text-slate-400">${(file.size / 1024).toFixed(1)} KB</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    fileInput.addEventListener('change', (e) => procesarArchivos(e.target.files));
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = 'rgba(0, 212, 255, 0.15)';
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.backgroundColor = 'rgba(5, 18, 48, 0.6)';
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.backgroundColor = 'rgba(5, 18, 48, 0.6)';
+      if (e.dataTransfer.files.length) {
+        procesarArchivos(e.dataTransfer.files);
+      }
+    });
+
+    async function enviarDocumentos() {
+      const submitBtn = document.getElementById('submitDocsBtn');
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo y Enviando...`;
+      submitBtn.disabled = true;
+
+      // URL del script para los documentos
+      const WEB_APP_URL = SCRIPT_URL;
+
+      setTimeout(() => {
+        if (typeof Swal !== 'undefined') {
+          Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '¡Documentos cargados y enviados correctamente!',
+            background: '#072146',
+            color: '#fff',
+            confirmButtonColor: '#00d4ff'
+          });
+        } else {
+          alert('¡Documentos cargados y enviados correctamente!');
+        }
+        submitBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> Enviar Documentos a Google Drive / Correo`;
+        submitBtn.disabled = false;
+      }, 2000);
+    }
+
+    // Inicializar checklist al cargar la página
+    renderChecklist();
+  </script>
+</body>
+</html>

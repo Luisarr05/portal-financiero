@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Directorio de Especialistas & Proyecciones - Vertical M</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    :root {
+      --bbva-blue: #004481; 
+      --bbva-light-blue: #009ee3; 
+      --bbva-navy: #072146;
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+    }
+    
+    body { 
+      background: radial-gradient(circle at 50% 30%, #00d2ff 0%, #0052d4 40%, #030b1e 90%) !important;
+      background-attachment: fixed !important;
+      color: #ffffff; 
+      min-height: 100vh; 
+      overflow-x: hidden; 
+      padding-bottom: 80px; 
+    }
+
+    /* CAPA DE BALONES ANIMADOS EN EL FONDO */
+    .background-balls {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 1;
+    }
+
+    .ball {
+      position: absolute;
+      top: 100vh;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 14px rgba(0, 242, 254, 0.8));
+      animation-name: floatDiagonal;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+      animation-fill-mode: backwards;
+    }
+
+    .ball:nth-child(1) { background-image: url('balon.avif'); left: 2%; width: 110px; height: 110px; animation-duration: 10s; animation-delay: 0s; }
+    .ball:nth-child(2) { background-image: url('balon_2.avif'); left: 10%; width: 150px; height: 150px; animation-duration: 14s; animation-delay: 3s; }
+    .ball:nth-child(3) { background-image: url('balon_3.avif'); left: 18%; width: 90px; height: 90px; animation-duration: 9s; animation-delay: 1s; }
+    .ball:nth-child(4) { background-image: url('balon_4.avif'); left: 26%; width: 170px; height: 170px; animation-duration: 16s; animation-delay: 5s; }
+    .ball:nth-child(5) { background-image: url('balon_5.avif'); left: 34%; width: 120px; height: 120px; animation-duration: 11s; animation-delay: 2s; }
+    .ball:nth-child(6) { background-image: url('balon_6.avif'); left: 42%; width: 180px; height: 180px; animation-duration: 17s; animation-delay: 4s; }
+    .ball:nth-child(7) { background-image: url('balon_7.avif'); left: 50%; width: 100px; height: 100px; animation-duration: 8.5s; animation-delay: 0.5s; }
+    .ball:nth-child(8) { background-image: url('balon_8.avif'); left: 58%; width: 160px; height: 160px; animation-duration: 13s; animation-delay: 2.5s; }
+    .ball:nth-child(9) { background-image: url('balon_9.avif'); left: 66%; width: 130px; height: 130px; animation-duration: 15s; animation-delay: 1.5s; }
+    .ball:nth-child(10) { background-image: url('balon_10.avif'); left: 74%; width: 175px; height: 175px; animation-duration: 18s; animation-delay: 3.5s; }
+    .ball:nth-child(11) { background-image: url('balon_11.avif'); left: 82%; width: 115px; height: 115px; animation-duration: 10.5s; animation-delay: 4.5s; }
+    .ball:nth-child(12) { background-image: url('balon_12.avif'); left: 88%; width: 140px; height: 140px; animation-duration: 12s; animation-delay: 1s; }
+    .ball:nth-child(13) { background-image: url('balon_13.avif'); left: 93%; width: 95px; height: 95px; animation-duration: 9.5s; animation-delay: 6s; }
+
+    @keyframes floatDiagonal {
+      0% { transform: translateY(10vh) translateX(0) rotate(0deg); }
+      100% { transform: translateY(-130vh) translateX(120px) rotate(360deg); }
+    }
+
+    .bg-ambient-glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 1000px; height: 600px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.2) 0%, rgba(0, 82, 212, 0.1) 50%, rgba(0,0,0,0) 80%);
+      pointer-events: none; z-index: 1;
+    }
+
+    /* TARJETAS GLASSMORPHISM CON BORDES GLOW NEÓN */
+    .glass-card {
+      background: rgba(3, 11, 30, 0.70) !important;
+      border: 1px solid rgba(0, 212, 255, 0.35) !important;
+      backdrop-filter: blur(16px) !important;
+      box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .glass-card:hover {
+      border-color: rgba(0, 212, 255, 0.75) !important;
+      box-shadow: 0 15px 45px 0 rgba(0, 212, 255, 0.25);
+    }
+
+    .glass-card-interactive {
+      background: rgba(3, 11, 30, 0.65);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+
+    .glass-card-interactive:hover {
+      transform: translateY(-4px);
+      background: rgba(5, 18, 48, 0.85);
+      border-color: rgba(0, 212, 255, 0.6);
+      box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+    }
+
+    /* BOTÓN REGRESAR GLASSMORPHISM */
+    .btn-back {
+      background: rgba(3, 11, 30, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      backdrop-filter: blur(10px);
+      color: #00d4ff;
+      transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: rgba(0, 212, 255, 0.8);
+      color: #ffffff;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      transform: translateX(-3px);
+    }
+
+    /* BOTÓN PRINCIPAL CON EFECTO NEÓN */
+    .btn-action {
+      position: relative;
+      background: linear-gradient(135deg, #00d4ff 0%, #0052d4 50%, #7928ca 100%);
+      background-size: 200% 200%;
+      animation: gradientShift 4s ease infinite;
+      box-shadow: 0 0 25px rgba(0, 212, 255, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 0 40px rgba(0, 212, 255, 0.9);
+    }
+
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ROBOT BBVA FLOTANTE */
+    .bbva-character-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 100;
+      width: 100px;
+    }
+
+    .robot-body-wrapper {
+      width: 90px;
+      height: 125px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: levitate 3.5s infinite ease-in-out;
+    }
+
+    @keyframes levitate {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .robot-head {
+      width: 56px;
+      height: 44px;
+      background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+      border: 3px solid var(--bbva-blue);
+      border-radius: 16px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 5;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25), inset -2px -2px 6px rgba(0,0,0,0.1);
+    }
+
+    .robot-eyes-container { display: flex; gap: 8px; }
+    .robot-eye {
+      width: 9px; height: 9px; background: #00e5ff; border-radius: 50%;
+      transition: all 0.12s ease-in-out; box-shadow: 0 0 10px #00e5ff, 0 0 4px rgba(0, 229, 255, 0.6);
+    }
+
+    .robot-antenna { position: absolute; top: -14px; width: 4px; height: 14px; background: linear-gradient(to top, var(--bbva-blue), var(--bbva-light-blue)); left: calc(50% - 2px); }
+    .robot-antenna::before { content: ''; position: absolute; top: -7px; left: -4px; width: 12px; height: 12px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 12px #00e5ff; }
+
+    .robot-neck { width: 16px; height: 6px; background: linear-gradient(to right, #94a3b8, #cbd5e1, #64748b); border: 2px solid var(--bbva-blue); margin-top: -2px; z-index: 4; }
+
+    .robot-torso {
+      width: 64px; height: 54px; background: radial-gradient(circle at 30% 30%, var(--bbva-blue) 0%, var(--bbva-navy) 80%);
+      border: 3px solid var(--bbva-light-blue); border-radius: 14px; position: relative; z-index: 3; display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+    }
+
+    .robot-screen {
+      width: 42px; height: 28px; background: #090d16; border: 1.5px solid #00e5ff; border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; color: #00e5ff; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.8px; text-shadow: 0 0 5px #00e5ff; box-shadow: inset 0 0 6px rgba(0, 229, 255, 0.3);
+    }
+
+    .robot-arm { width: 11px; height: 38px; background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%); border: 2px solid var(--bbva-blue); border-radius: 8px; position: absolute; top: 52px; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+    .robot-arm.left { left: -8px; transform-origin: top center; }
+    .robot-arm.right { right: -8px; transform-origin: top center; transition: transform 0.3s ease; }
+
+    .robot-thruster { width: 26px; height: 10px; background: linear-gradient(to right, #64748b, #cbd5e1, #475569); border: 2px solid var(--bbva-blue); border-radius: 0 0 10px 10px; margin-top: -2px; position: relative; }
+    .robot-thruster::after {
+      content: ''; position: absolute; bottom: -8px; left: 5px; width: 12px; height: 8px; background: linear-gradient(to bottom, #00e5ff, rgba(0, 229, 255, 0.4), transparent); border-radius: 50%; animation: thrust 0.15s infinite alternate; filter: drop-shadow(0 0 6px #00e5ff);
+    }
+
+    @keyframes thrust { from { height: 5px; opacity: 0.7; } to { height: 10px; opacity: 1; } }
+
+    .bbva-speech-bubble {
+      position: absolute; bottom: 145px; right: -10px; background: #ffffff; color: var(--bbva-navy); padding: 12px 18px; border-radius: 14px; font-size: 0.88rem; font-weight: bold; box-shadow: 0 8px 24px rgba(0,0,0,0.3); width: 220px; text-align: center; opacity: 1; pointer-events: none; z-index: 105; border: 1px solid #e2e8f0; line-height: 1.4;
+    }
+    .bbva-speech-bubble::after { content: ''; position: absolute; bottom: -7px; right: 48px; border-width: 8px 8px 0; border-style: solid; border-color: #ffffff transparent; display: block; width: 0; }
+
+    /* ESTILO DE BADGES / LINKS EMAIL */
+    .email-link {
+      color: #38bdf8;
+      transition: color 0.2s ease;
+    }
+    .email-link:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* ESTILO CUSTOMIZADO DE SWEETALERT GLASSMORPHISM */
+    .swal-glass-popup {
+      background: rgba(3, 11, 30, 0.92) !important;
+      border: 1px solid rgba(0, 212, 255, 0.4) !important;
+      backdrop-filter: blur(20px) !important;
+      border-radius: 24px !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 50px rgba(0, 212, 255, 0.25) !important;
+    }
+  </style>
+</head>
+<body class="relative z-10">
+
+  <!-- FONDO CON BALONES FLOTANTES NEÓN -->
+  <div class="background-balls">
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div>
+  </div>
+
+  <div class="bg-ambient-glow"></div>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <main class="container mx-auto px-4 py-10 max-w-7xl relative z-10">
+    
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR / BOTÓN REGRESAR -->
+    <div class="flex items-center justify-between mb-8 animate__animated animate__fadeInDown">
+      <a href="index.html" class="btn-back px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 shadow-lg">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Regresar a Página Principal
+      </a>
+    </div>
+
+    <!-- HEADER CON TÍTULO IMPACTANTE -->
+    <header class="text-center mb-12 animate__animated animate__fadeInDown">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 text-xs font-bold tracking-widest uppercase mb-4 shadow-lg">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        Estructura Organizacional M
+      </div>
+      <h1 class="text-4xl md:text-6xl font-black tracking-tight text-white mb-3">
+        Directorio de <span class="bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Especialistas & Estructuración</span>
+      </h1>
+      <p class="text-slate-300 text-base md:text-lg max-w-2xl mx-auto font-normal">
+        Consulta al equipo responsable del seguimiento, diseño y formalización de operaciones de financiamiento M.
+      </p>
+    </header>
+
+    <!-- GRID DE OPCIONES Y EQUIPO -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+      
+      <!-- 1. ESTRUCTURADOR DIVISIONAL -->
+      <section class="glass-card rounded-3xl p-6 flex flex-col justify-between animate__animated animate__fadeInUp animate__delay-1s">
+        <div>
+          <div class="flex items-center justify-between border-b border-cyan-500/30 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-3 bg-cyan-500/20 text-cyan-300 rounded-2xl border border-cyan-400/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h5m-5 0V11m0 0h5m-5 0H7"></path></svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">Estructurador Divisional</h2>
+                <span class="text-xs text-cyan-300 font-semibold">Liderazgo & Coordinación</span>
+              </div>
+            </div>
+            <span class="text-xs bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded-full border border-cyan-400/30 font-bold">1 Encargado</span>
+          </div>
+
+          <div class="glass-card-interactive rounded-2xl p-4 flex items-center gap-4 mb-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg border border-cyan-300/40 shrink-0">
+              AG
+            </div>
+            <div class="overflow-hidden">
+              <h3 class="text-base font-bold text-white leading-tight">Aldo Alberto González Plascencia</h3>
+              <p class="text-xs text-cyan-200/80 mt-1 font-medium">Estructurador Divisional</p>
+              <a href="mailto:aldoalberto.gonzalez.plascenc@bbva.com" class="text-xs email-link block truncate mt-1">aldoalberto.gonzalez.plascenc@bbva.com</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN DE PROYECCIÓN INTEGRADA DENTRO DE ESTRUCTURADOR DIVISIONAL -->
+        <div class="mt-4 pt-4 border-t border-cyan-500/20">
+          <p class="text-xs text-slate-300 mb-4">Supervisa y valida las estructuras financieras integrales para operaciones estratégicas.</p>
+          
+          <div class="bg-cyan-950/40 p-4 rounded-2xl border border-cyan-500/30 text-center">
+            <h4 class="text-sm font-bold text-white mb-1">¿Deseas realizar una proyección?</h4>
+            <p class="text-xs text-cyan-100/70 mb-3">Simula escenarios o genera tablas de amortización.</p>
+            
+            <button onclick="iniciarProyeccion()" class="btn-action w-full text-white text-xs font-extrabold py-3 px-4 rounded-xl flex items-center justify-center gap-2 uppercase tracking-wider">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              Hacer una Proyección
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. ESPECIALISTAS AGRO -->
+      <section class="glass-card rounded-3xl p-6 flex flex-col justify-between animate__animated animate__fadeInUp animate__delay-2s">
+        <div>
+          <div class="flex items-center justify-between border-b border-cyan-500/30 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-3 bg-emerald-500/20 text-emerald-300 rounded-2xl border border-emerald-400/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V11.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 5H7a2 2 0 00-2 2v1.935z"></path></svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">Especialistas Agro</h2>
+                <span class="text-xs text-emerald-300 font-semibold">Sector Agroindustrial</span>
+              </div>
+            </div>
+            <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2.5 py-1 rounded-full border border-emerald-400/30 font-bold">2 Personas</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="glass-card-interactive rounded-2xl p-3.5 flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-base shadow-lg border border-emerald-300/40 shrink-0">
+                LC
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="text-sm font-bold text-white truncate">Luis Guillermo Carrillo Carrillo</h3>
+                <a href="mailto:luisguillermo.carrillo@bbva.com" class="text-xs email-link block truncate">luisguillermo.carrillo@bbva.com</a>
+              </div>
+            </div>
+
+            <div class="glass-card-interactive rounded-2xl p-3.5 flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-base shadow-lg border border-emerald-300/40 shrink-0">
+                GM
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="text-sm font-bold text-white truncate">Gustavo Martínez González</h3>
+                <a href="mailto:gustavo.martinez.gonzalez@bbva.com" class="text-xs email-link block truncate">gustavo.martinez.gonzalez@bbva.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-cyan-500/20 text-xs text-slate-300">
+          <p>Atención focalizada a la cadena de valor agroalimentaria, ganadera y agroindustrial.</p>
+        </div>
+      </section>
+
+      <!-- 3. ESPECIALISTAS SECTORIALES -->
+      <section class="glass-card rounded-3xl p-6 flex flex-col justify-between animate__animated animate__fadeInUp animate__delay-3s">
+        <div>
+          <div class="flex items-center justify-between border-b border-cyan-500/30 pb-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-3 bg-indigo-500/20 text-indigo-300 rounded-2xl border border-indigo-400/30">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-white">Especialistas Sectoriales</h2>
+                <span class="text-xs text-indigo-300 font-semibold">Sectores Especializados</span>
+              </div>
+            </div>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-400/30 font-bold">3 Personas</span>
+          </div>
+
+          <div class="space-y-3">
+            <div class="glass-card-interactive rounded-2xl p-3.5 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg border border-indigo-300/40 shrink-0">
+                CB
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="text-sm font-bold text-white truncate">Carlos Barron</h3>
+                <a href="mailto:carlos.barron@bbva.com" class="text-xs email-link block truncate">carlos.barron@bbva.com</a>
+              </div>
+            </div>
+
+            <div class="glass-card-interactive rounded-2xl p-3.5 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg border border-indigo-300/40 shrink-0">
+                JR
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="text-sm font-bold text-white truncate">Jorge Rodríguez</h3>
+                <a href="mailto:jorge.rodriguez.gutierrez@bbva.com" class="text-xs email-link block truncate">jorge.rodriguez.gutierrez@bbva.com</a>
+              </div>
+            </div>
+
+            <div class="glass-card-interactive rounded-2xl p-3.5 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-lg border border-indigo-300/40 shrink-0">
+                LR
+              </div>
+              <div class="overflow-hidden">
+                <h3 class="text-sm font-bold text-white truncate">Luis Fernando Rodríguez</h3>
+                <a href="mailto:luisfernando.rodriguez3@bbva.com" class="text-xs email-link block truncate">luisfernando.rodriguez3@bbva.com</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-cyan-500/20 text-xs text-slate-300">
+          <p>Especialización profunda por industrias clave para análisis de riesgos y mercado.</p>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- CONTENEDOR FLOTANTE DEL ROBOT BBVA -->
+  <div class="bbva-character-container">
+    <div class="bbva-speech-bubble" id="robotBubble">¡Bienvenido! ¿Necesitas ayuda para contactar a un especialista? 🤖</div>
+    
+    <div class="robot-body-wrapper">
+      <div class="robot-antenna"></div>
+      <div class="robot-head">
+        <div class="robot-eyes-container">
+          <div class="robot-eye eye-l"></div>
+          <div class="robot-eye eye-r"></div>
+        </div>
+      </div>
+      <div class="robot-neck"></div>
+      <div class="robot-torso">
+        <div class="robot-screen">L-EASY</div>
+      </div>
+      <div class="robot-arm left"></div>
+      <div class="robot-arm right"></div>
+      <div class="robot-thruster"></div>
+    </div>
+  </div>
+
+  <!-- SCRIPT DE MODALES DE PROYECCIÓN Y TABLAS DE AMORTIZACIÓN -->
+  <script>
+    function iniciarProyeccion() {
+      Swal.fire({
+        title: '<span style="color:#00d4ff; font-weight:800; font-size: 1.4rem;">¿Qué tipo de análisis deseas realizar?</span>',
+        html: `
+          <p style="color:#cbd5e1; font-size:0.85rem; margin-bottom: 20px;">
+            Selecciona la modalidad de cálculo que mejor se adapte a tus necesidades de evaluación:
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+            
+            <!-- OPCIÓN 1: PROYECCIÓN RÁPIDA -->
+            <button id="btnProyeccionEstandard" style="
+              background: rgba(0, 82, 212, 0.4);
+              border: 1px solid rgba(0, 212, 255, 0.4);
+              padding: 12px 16px;
+              border-radius: 16px;
+              color: white;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            " onmouseover="this.style.background='rgba(0, 212, 255, 0.3)'; this.style.borderColor='#00d4ff'" onmouseout="this.style.background='rgba(0, 82, 212, 0.4)'; this.style.borderColor='rgba(0, 212, 255, 0.4)'">
+              <span style="font-size: 1.5rem;">📊</span>
+              <div>
+                <strong style="display:block; color:#ffffff; font-size: 0.9rem;">Proyección Estándar</strong>
+                <span style="font-size:0.75rem; color:#94a3b8;">Solicitud y estimación rápida de escenarios generales.</span>
+              </div>
+            </button>
+
+            <!-- OPCIÓN 2: SUPUESTOS DEL CRÉDITO (GEMA_RE) -->
+            <button id="btnSupuestosGema" style="
+              background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(5, 150, 105, 0.5));
+              border: 1.5px solid #10b981;
+              padding: 12px 16px;
+              border-radius: 16px;
+              color: white;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 0.6)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 0 15px rgba(16, 185, 129, 0.3)'">
+              <span style="font-size: 1.5rem;">⚡</span>
+              <div>
+                <strong style="display:block; color:#34d399; font-size: 0.9rem;">Supuestos del Crédito (GEMA_RE)</strong>
+                <span style="font-size:0.75rem; color:#e2e8f0;">Configuración avanzada de tasa, NOI, amortización y sensibilidad.</span>
+              </div>
+            </button>
+
+            <!-- OPCIÓN 3: GENERAR TABLAS DE AMORTIZACIÓN -->
+            <button id="btnTablasAmortizacion" style="
+              background: linear-gradient(135deg, rgba(121, 40, 202, 0.3), rgba(168, 85, 247, 0.4));
+              border: 1.5px solid #c084fc;
+              padding: 12px 16px;
+              border-radius: 16px;
+              color: white;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(168, 85, 247, 0.6)'" onmouseout="this.style.transform='none'; this.style.boxShadow='0 0 15px rgba(168, 85, 247, 0.3)'">
+              <span style="font-size: 1.5rem;">📑</span>
+              <div>
+                <strong style="display:block; color:#e9d5ff; font-size: 0.9rem;">Generar Tablas de Amortización</strong>
+                <span style="font-size:0.75rem; color:#e2e8f0;">Cálculos detallados de cuotas y saldos para esquemas específicos.</span>
+              </div>
+            </button>
+
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: {
+          popup: 'swal-glass-popup'
+        },
+        didOpen: () => {
+          document.getElementById('btnProyeccionEstandard').addEventListener('click', () => {
+            window.location.href = "PAGINA_TER.html";
+          });
+          document.getElementById('btnSupuestosGema').addEventListener('click', () => {
+            window.location.href = "GEMA_RE.html";
+          });
+          document.getElementById('btnTablasAmortizacion').addEventListener('click', () => {
+            abrirSeleccionAmortizacion();
+          });
+        }
+      });
+    }
+
+    /* MODAL DE SELECCIÓN PARA TIPO DE AMORTIZACIÓN */
+    function abrirSeleccionAmortizacion() {
+      Swal.fire({
+        title: '<span style="color:#c084fc; font-weight:800; font-size: 1.3rem;">Tipo de Amortización</span>',
+        html: `
+          <p style="color:#cbd5e1; font-size:0.85rem; margin-bottom: 20px;">
+            Selecciona la estructura de pagos que deseas generar:
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
+            
+            <!-- LINEAL -->
+            <button id="btnAmortizacionLineal" style="
+              background: rgba(0, 212, 255, 0.2);
+              border: 1px solid rgba(0, 212, 255, 0.5);
+              padding: 14px 18px;
+              border-radius: 16px;
+              color: white;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            " onmouseover="this.style.background='rgba(0, 212, 255, 0.4)'; this.style.borderColor='#00d4ff'" onmouseout="this.style.background='rgba(0, 212, 255, 0.2)'; this.style.borderColor='rgba(0, 212, 255, 0.5)'">
+              <span style="font-size: 1.5rem;">📈</span>
+              <div>
+                <strong style="display:block; color:#ffffff; font-size: 0.9rem;">Amortización Lineal</strong>
+                <span style="font-size:0.75rem; color:#94a3b8;">Pagos o capitalización constante en cada periodo.</span>
+              </div>
+            </button>
+
+            <!-- CRECIENTE -->
+            <button id="btnAmortizacionCreciente" style="
+              background: rgba(168, 85, 247, 0.2);
+              border: 1px solid rgba(168, 85, 247, 0.5);
+              padding: 14px 18px;
+              border-radius: 16px;
+              color: white;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+            " onmouseover="this.style.background='rgba(168, 85, 247, 0.4)'; this.style.borderColor='#c084fc'" onmouseout="this.style.background='rgba(168, 85, 247, 0.2)'; this.style.borderColor='rgba(168, 85, 247, 0.5)'">
+              <span style="font-size: 1.5rem;">📊</span>
+              <div>
+                <strong style="display:block; color:#ffffff; font-size: 0.9rem;">Amortización Creciente</strong>
+                <span style="font-size:0.75rem; color:#94a3b8;">Pagos con porcentaje o factor de incremento periódico.</span>
+              </div>
+            </button>
+
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true,
+        customClass: {
+          popup: 'swal-glass-popup'
+        },
+        didOpen: () => {
+          document.getElementById('btnAmortizacionLineal').addEventListener('click', () => {
+            window.location.href = "AMORTIZACION LINEAL.html";
+          });
+          document.getElementById('btnAmortizacionCreciente').addEventListener('click', () => {
+            window.location.href = "AMORTIZACION CRECIENTE.html";
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

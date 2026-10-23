@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructuración de Deuda - Real Estate</title>
+    
+    <!-- Librerías de la PÁGINA PRINCIPAL para Estilo, Animación y PDF Directo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --bbva-blue: #004481; 
+            --bbva-light-blue: #009ee3; 
+            --bbva-navy: #072146;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 50% 30%, #00d2ff 0%, #0052d4 40%, #030b1e 90%) !important;
+            background-attachment: fixed !important;
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 50px;
+        }
+
+        /* FONDO DE BALONES ANIMADOS EN NEÓN */
+        .background-balls {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.85;
+        }
+
+        .ball {
+            position: absolute;
+            top: 100vh;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.85;
+            filter: drop-shadow(0 0 14px rgba(0, 242, 254, 0.8));
+            animation-name: floatDiagonal;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+            animation-fill-mode: backwards;
+        }
+
+        .ball:nth-child(1) { background-image: url('balon.avif'); left: 2%; width: 110px; height: 110px; animation-duration: 10s; animation-delay: 0s; }
+        .ball:nth-child(2) { background-image: url('balon_2.avif'); left: 10%; width: 150px; height: 150px; animation-duration: 14s; animation-delay: 3s; }
+        .ball:nth-child(3) { background-image: url('balon_3.avif'); left: 18%; width: 90px; height: 90px; animation-duration: 9s; animation-delay: 1s; }
+        .ball:nth-child(4) { background-image: url('balon_4.avif'); left: 26%; width: 170px; height: 170px; animation-duration: 16s; animation-delay: 5s; }
+        .ball:nth-child(5) { background-image: url('balon_5.avif'); left: 34%; width: 120px; height: 120px; animation-duration: 11s; animation-delay: 2s; }
+        .ball:nth-child(6) { background-image: url('balon_6.avif'); left: 42%; width: 180px; height: 180px; animation-duration: 17s; animation-delay: 4s; }
+        .ball:nth-child(7) { background-image: url('balon_7.avif'); left: 50%; width: 100px; height: 100px; animation-duration: 8.5s; animation-delay: 0.5s; }
+        .ball:nth-child(8) { background-image: url('balon_8.avif'); left: 58%; width: 160px; height: 160px; animation-duration: 13s; animation-delay: 2.5s; }
+        .ball:nth-child(9) { background-image: url('balon_9.avif'); left: 66%; width: 130px; height: 130px; animation-duration: 15s; animation-delay: 1.5s; }
+        .ball:nth-child(10) { background-image: url('balon_10.avif'); left: 74%; width: 175px; height: 175px; animation-duration: 18s; animation-delay: 3.5s; }
+        .ball:nth-child(11) { background-image: url('balon_11.avif'); left: 82%; width: 115px; height: 115px; animation-duration: 10.5s; animation-delay: 4.5s; }
+        .ball:nth-child(12) { background-image: url('balon_12.avif'); left: 88%; width: 140px; height: 140px; animation-duration: 12s; animation-delay: 1s; }
+        .ball:nth-child(13) { background-image: url('balon_13.avif'); left: 93%; width: 95px; height: 95px; animation-duration: 9.5s; animation-delay: 6s; }
+
+        @keyframes floatDiagonal {
+            0% { transform: translateY(10vh) translateX(0) rotate(0deg); }
+            100% { transform: translateY(-130vh) translateX(120px) rotate(360deg); }
+        }
+
+        /* TARJETAS CON EFECTO DE CRISTAL (GLASSMORPHISM) */
+        .glass-card {
+            background: rgba(3, 11, 30, 0.75) !important;
+            border: 1px solid rgba(0, 212, 255, 0.3) !important;
+            backdrop-filter: blur(14px) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .glass-input {
+            background-color: rgba(7, 16, 82, 0.8) !important;
+            border: 1px solid rgba(0, 212, 255, 0.3) !important;
+            color: #ffffff !important;
+        }
+
+        .glass-input:focus {
+            border-color: #00d4ff !important;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        /* BOTONES CON ESTILO NEÓN */
+        .btn-neon-blue {
+            background: linear-gradient(135deg, #00d4ff, #0052d4);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-neon-blue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.8);
+        }
+
+        .btn-neon-green {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+        }
+        .btn-neon-green:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+        }
+
+        .btn-neon-back {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            transition: all 0.3s ease;
+        }
+        .btn-neon-back:hover {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* PESTAÑAS (TABS) */
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: #00d4ff;
+            border-bottom-color: #00d4ff;
+            text-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* PLANTILLA DE PDF OCULTA PARA GENERACIÓN DIRECTA */
+        #pdfReportTemplate {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+            width: 800px;
+            background-color: #ffffff;
+            color: #0f172a;
+            padding: 35px;
+            font-family: Arial, Helvetica, sans-serif !important;
+            box-sizing: border-box;
+        }
+        #pdfReportTemplate * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif !important; }
+
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 9pt; }
+        .pdf-table th, .pdf-table td { border: 1px solid #cbd5e1; padding: 6px 8px; }
+        .pdf-table th { background-color: #030838; color: white; text-align: right; }
+        .pdf-table th:first-child, .pdf-table td:first-child { text-align: left; }
+    </style>
+</head>
+<body class="relative min-h-screen">
+
+    <!-- FONDO DE BALONES ANIMADOS FLOTANTES -->
+    <div class="background-balls">
+        <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+        <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+        <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+        <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+        <div class="ball"></div>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL TIPO DASHBOARD -->
+    <div class="relative z-10 flex flex-col lg:flex-row min-h-screen">
+        
+        <!-- BARRA LATERAL (SIDEBAR PARÁMETROS) -->
+        <aside class="w-full lg:w-80 glass-card p-6 flex flex-col gap-4 overflow-y-auto shrink-0 border-r border-cyan-500/30">
+            <h3 class="text-base font-bold border-b border-cyan-500/30 pb-2 text-cyan-300 uppercase tracking-wider">Supuestos del Crédito</h3>
+            
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Cálculo del Monto</label>
+                <select id="calcMonto" class="glass-input p-2 rounded text-sm outline-none">
+                    <option value="manual">Ingreso Manual</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Monto Crédito (USD)</label>
+                <input type="number" id="montoCredito" value="167331" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Tasa Interés Anual (%)</label>
+                <input type="number" id="tasaInteres" value="8.8" step="0.1" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Plazo del Contrato (Meses)</label>
+                <input type="number" id="plazoMeses" value="60" class="glass-input p-2 rounded text-sm outline-none">
+                <span class="text-[10px] text-slate-400">Vencimiento del crédito</span>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Amortización Subyacente (Años)</label>
+                <input type="number" id="amortAnos" value="15" class="glass-input p-2 rounded text-sm outline-none">
+                <span class="text-[10px] text-slate-400">Base de cálculo de cuota (Style)</span>
+            </div>
+
+            <h3 class="text-base font-bold border-b border-cyan-500/30 pb-2 text-cyan-300 uppercase tracking-wider mt-2">Generación de Rentas</h3>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Método de Cálculo NOI</label>
+                <select id="metodoNoi" class="glass-input p-2 rounded text-sm outline-none">
+                    <option value="renta_gastos">Calcular (Renta - Gastos)</option>
+                </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Renta Bruta Mensual (sin IVA)</label>
+                <input type="number" id="rentaMensual" value="215730" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Gastos Operativos (%)</label>
+                <input type="number" id="gastosOp" value="20.0" step="0.1" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Crecimiento Anual (%)</label>
+                <input type="number" id="crecimientoAnual" value="3.0" step="0.1" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Fecha de Inicio</label>
+                <input type="date" id="fechaInicio" value="2025-09-30" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <h3 class="text-base font-bold border-b border-cyan-500/30 pb-2 text-cyan-300 uppercase tracking-wider mt-2">Gestión del Escenario</h3>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs text-cyan-200/80">Nombre del escenario</label>
+                <input type="text" id="nombreEscenario" value="Escenario Base" class="glass-input p-2 rounded text-sm outline-none">
+            </div>
+
+            <!-- BOTONES DE ACCIÓN NEÓN -->
+            <button onclick="ejecutarModelo()" class="btn-neon-blue font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 mt-2">
+                ⚡ CALCULAR MODELO
+            </button>
+            
+            <button onclick="descargarReportePDFDirecto()" class="btn-neon-green font-bold py-3 px-4 rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                📄 DESCARGAR REPORTE (PDF DIRECTO)
+            </button>
+
+            <div class="bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 p-2.5 rounded text-xs text-center font-semibold mt-2">
+                ✓ Modelo calculado correctamente.
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main class="flex-grow p-6 flex flex-col gap-6 overflow-y-auto">
+            <!-- HEADER -->
+            <header class="glass-card p-6 rounded-2xl flex justify-between items-center animate__animated animate__fadeIn flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <!-- BOTÓN DE REGRESAR A PAGINA_SEC.html -->
+                    <a href="PAGINA_SEC.html" class="btn-neon-back font-bold py-2 px-4 rounded-xl text-xs tracking-wider flex items-center gap-2 no-underline">
+                        ← Regresar
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300">Estructuración de Deuda</h1>
+                        <p class="text-xs text-cyan-200/80 mt-1">Análisis con Amortización Subyacente (Mortgage Style)</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-cyan-950/80 border border-cyan-400 text-cyan-300 font-bold text-xs rounded-full shadow-lg">
+                    REAL ESTATE
+                </span>
+            </header>
+
+            <!-- TABS Y CONTENIDO -->
+            <div class="glass-card rounded-2xl p-6 animate__animated animate__fadeIn">
+                <!-- PESTAÑAS -->
+                <div class="flex border-b border-cyan-500/30 mb-6">
+                    <button class="tab-btn active" onclick="changeTab('tab1', this)">Dashboard & Resumen</button>
+                    <button class="tab-btn" onclick="changeTab('tab2', this)">Análisis de Sensibilidad</button>
+                    <button class="tab-btn" onclick="changeTab('tab3', this)">Tabla Detallada</button>
+                </div>
+
+                <!-- TAB 1: DASHBOARD -->
+                <div id="tab1" class="tab-content active space-y-6">
+                    <!-- METRIC CARDS -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="bg-slate-950/80 border-l-4 border-cyan-400 border border-cyan-500/30 p-4 rounded-xl">
+                            <span class="text-[10px] text-cyan-200/70 font-bold uppercase tracking-wider">Cuota Mensual (P&I)</span>
+                            <div class="text-xl font-bold text-white mt-1" id="kpiCuota">$0.00</div>
+                        </div>
+                        <div class="bg-slate-950/80 border-l-4 border-sky-400 border border-cyan-500/30 p-4 rounded-xl">
+                            <span class="text-[10px] text-cyan-200/70 font-bold uppercase tracking-wider">RCSD GLOBAL (DSCR)</span>
+                            <div class="text-xl font-bold text-cyan-300 mt-1" id="kpiRcsdGlobal">0.00x</div>
+                        </div>
+                        <div class="bg-slate-950/80 border-l-4 border-emerald-400 border border-cyan-500/30 p-4 rounded-xl">
+                            <span class="text-[10px] text-cyan-200/70 font-bold uppercase tracking-wider">Pago Final (Balloon)</span>
+                            <div class="text-xl font-bold text-emerald-400 mt-1" id="kpiBalloon">$0.00</div>
+                        </div>
+                        <div class="bg-slate-950/80 border-l-4 border-orange-400 border border-cyan-500/30 p-4 rounded-xl">
+                            <span class="text-[10px] text-cyan-200/70 font-bold uppercase tracking-wider">% Balloon s/ Saldo Inicial</span>
+                            <div class="text-xl font-bold text-orange-400 mt-1" id="kpiPctBalloon">0.0%</div>
+                        </div>
+                    </div>
+
+                    <!-- GRÁFICO -->
+                    <div>
+                        <h3 class="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                            Análisis de Cobertura Anual (NOI vs Deuda)
+                        </h3>
+                        <div class="bg-slate-950/70 border border-cyan-500/30 p-4 rounded-xl h-72">
+                            <canvas id="chartCobertura"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- TABLA RESUMEN -->
+                    <div>
+                        <h3 class="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                            Resumen Operativo Anual
+                        </h3>
+                        <div class="overflow-x-auto rounded-xl border border-cyan-500/30">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-slate-950/90 text-cyan-200 border-b border-cyan-500/30">
+                                    <tr>
+                                        <th class="p-3 text-left">Año Operativo</th>
+                                        <th class="p-3">NOI Total</th>
+                                        <th class="p-3">Servicio Deuda</th>
+                                        <th class="p-3">Intereses</th>
+                                        <th class="p-3">Amort. Capital</th>
+                                        <th class="p-3">RCSD (DSCR)</th>
+                                        <th class="p-3">Saldo Cierre</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaResumenAnual" class="divide-y divide-cyan-500/20 text-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: SENSIBILIDAD -->
+                <div id="tab2" class="tab-content space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-slate-950/90 border border-cyan-500/40 p-6 rounded-2xl flex flex-col justify-center">
+                            <span class="text-xs text-cyan-200/70 uppercase font-bold">BREAK-EVEN NOI (RCSD = 1.0X)</span>
+                            <div class="text-3xl font-black text-amber-400 my-2" id="beValue">$0.00</div>
+                            <p class="text-xs text-slate-300 leading-relaxed" id="beSubText">El NOI actual soporta una caída antes de bajar de 1.0x.</p>
+                        </div>
+                        <div class="lg:col-span-2 bg-slate-950/70 border border-cyan-500/30 p-4 rounded-xl h-64">
+                            <canvas id="chartSensibilidad"></canvas>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-bold text-cyan-300 mb-3">Escenarios de Estrés (Año 1 Estabilizado)</h3>
+                        <div class="overflow-x-auto rounded-xl border border-cyan-500/30">
+                            <table class="w-full text-right text-xs">
+                                <thead class="bg-slate-950/90 text-cyan-200 border-b border-cyan-500/30">
+                                    <tr>
+                                        <th class="p-3 text-left">Escenario</th>
+                                        <th class="p-3">Ajuste NOI</th>
+                                        <th class="p-3">NOI Anual Resultante</th>
+                                        <th class="p-3">Servicio Deuda (Año 1)</th>
+                                        <th class="p-3">RCSD Resultante</th>
+                                        <th class="p-3">Cash Flow (Después Deuda)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaSensibilidad" class="divide-y divide-cyan-500/20 text-slate-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: TABLA DETALLADA -->
+                <div id="tab3" class="tab-content">
+                    <h3 class="text-sm font-bold text-cyan-300 mb-3">Calendario de Amortización Mensual</h3>
+                    <div class="overflow-x-auto rounded-xl border border-cyan-500/30 max-h-[500px]">
+                        <table class="w-full text-right text-xs">
+                            <thead class="bg-slate-950/90 text-cyan-200 border-b border-cyan-500/30 sticky top-0">
+                                <tr>
+                                    <th class="p-3 text-left">Mes</th>
+                                    <th class="p-3 text-left">Fecha</th>
+                                    <th class="p-3">Saldo Inicial</th>
+                                    <th class="p-3">Intereses</th>
+                                    <th class="p-3">Principal</th>
+                                    <th class="p-3">Pago Total</th>
+                                    <th class="p-3">NOI</th>
+                                    <th class="p-3">RCSD</th>
+                                    <th class="p-3">Saldo Final</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaAmortizacion" class="divide-y divide-cyan-500/20 text-slate-200"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- PLANTILLA OCULTA PARA GENERACIÓN Y DESCARGA DIRECTA DE PDF -->
+    <div id="pdfReportTemplate">
+        <div style="border-bottom: 3px solid #001fb8; padding-bottom: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end;">
+            <div>
+                <h1 style="font-size: 18pt; color: #030838; margin: 0;">Informe Ejecutivo de Estructuración de Deuda</h1>
+                <p style="font-size: 9pt; color: #2563eb; margin-top: 4px;">Análisis de Viabilidad Financiera, Cobertura y Amortización</p>
+            </div>
+            <div style="font-size: 8pt; color: #64748b; text-align: right;">
+                <strong>Fecha:</strong> <span id="rptFechaEmision"></span><br>
+                <strong>Escenario:</strong> <span id="rptNombreEscenario"></span>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h2 style="font-size: 11pt; color: #030838; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; text-transform: uppercase;">1. Parámetros Generales de la Operación</h2>
+            <div id="rptParametrosGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px;"></div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h2 style="font-size: 11pt; color: #030838; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; text-transform: uppercase;">2. Indicadores Clave (KPIs)</h2>
+            <div id="rptKpisGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px;"></div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h2 style="font-size: 11pt; color: #030838; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; text-transform: uppercase;">3. Dictamen de Viabilidad</h2>
+            <div style="background-color: #f1f5f9; border-left: 4px solid #001fb8; padding: 10px; border-radius: 4px; font-size: 9pt; line-height: 1.4; margin-top: 8px;" id="rptAnalisisTexto"></div>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <h2 style="font-size: 11pt; color: #030838; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; text-transform: uppercase;">4. Proyección Operativa Anual</h2>
+            <table class="pdf-table">
+                <thead>
+                    <tr>
+                        <th>Año</th>
+                        <th>NOI Total</th>
+                        <th>Servicio Deuda</th>
+                        <th>Intereses</th>
+                        <th>Amort. Capital</th>
+                        <th>RCSD (DSCR)</th>
+                        <th>Saldo Cierre</th>
+                    </tr>
+                </thead>
+                <tbody id="rptTablaResumenBody"></tbody>
+            </table>
+        </div>
+
+        <div>
+            <h2 style="font-size: 11pt; color: #030838; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; text-transform: uppercase;">5. Análisis de Sensibilidad</h2>
+            <table class="pdf-table">
+                <thead>
+                    <tr>
+                        <th>Escenario</th>
+                        <th>Ajuste NOI</th>
+                        <th>NOI Resultante</th>
+                        <th>Servicio Deuda</th>
+                        <th>RCSD Resultante</th>
+                        <th>Cash Flow</th>
+                    </tr>
+                </thead>
+                <tbody id="rptTablaSensibilidadBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE LÓGICA Y DESCARGA DIRECTA DE PDF -->
+    <script>
+        let chartCoberturaInstance = null;
+        let chartSensibilidadInstance = null;
+        let globalModelData = null;
+
+        const fmtMoney = num => '$' + Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const fmtNum = num => Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        function changeTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function ejecutarModelo() {
+            const P = parseFloat(document.getElementById('montoCredito').value) || 0;
+            const tasaAnual = (parseFloat(document.getElementById('tasaInteres').value) || 0) / 100;
+            const plazoContrato = parseInt(document.getElementById('plazoMeses').value) || 60;
+            const amortAnos = parseInt(document.getElementById('amortAnos').value) || 15;
+            
+            const rentaMensual = parseFloat(document.getElementById('rentaMensual').value) || 0;
+            const gastosPct = (parseFloat(document.getElementById('gastosOp').value) || 0) / 100;
+            const crecimientoAnual = (parseFloat(document.getElementById('crecimientoAnual').value) || 0) / 100;
+            const fechaStart = new Date(document.getElementById('fechaInicio').value || '2025-09-30');
+            const nombreEscenario = document.getElementById('nombreEscenario').value || 'Escenario Base';
+
+            const r = tasaAnual / 12;
+            const nSubyacente = amortAnos * 12;
+            let cuota = r > 0 ? P * (r * Math.pow(1 + r, nSubyacente)) / (Math.pow(1 + r, nSubyacente) - 1) : P / nSubyacente;
+
+            let saldo = P;
+            let amortizacionData = [];
+            let noiMensualBase = rentaMensual * (1 - gastosPct);
+            let fechaCurr = new Date(fechaStart);
+
+            for (let m = 1; m <= plazoContrato; m++) {
+                const anoActual = Math.floor((m - 1) / 12);
+                const noiMes = noiMensualBase * Math.pow(1 + crecimientoAnual, anoActual);
+                const interes = saldo * r;
+                const principal = cuota - interes;
+                const saldoFinal = saldo - principal;
+                const rcsdMes = cuota > 0 ? (noiMes / cuota) : 0;
+
+                fechaCurr.setMonth(fechaCurr.getMonth() + 1);
+
+                amortizacionData.push({
+                    mes: m,
+                    fecha: fechaCurr.toISOString().split('T')[0],
+                    saldoInicial: saldo,
+                    interes: interes,
+                    principal: principal,
+                    pagoTotal: cuota,
+                    noi: noiMes,
+                    rcsd: rcsdMes,
+                    saldoFinal: saldoFinal
+                });
+
+                saldo = saldoFinal;
+            }
+
+            const pagoBalloon = amortizacionData[amortizacionData.length - 1].saldoFinal;
+            const pctBalloon = (pagoBalloon / P) * 100;
+
+            let resumenAnual = [];
+            for (let a = 0; a < plazoContrato / 12; a++) {
+                const slice = amortizacionData.slice(a * 12, (a + 1) * 12);
+                const noiTotal = slice.reduce((sum, d) => sum + d.noi, 0);
+                const servDeuda = slice.reduce((sum, d) => sum + d.pagoTotal, 0);
+                const intereses = slice.reduce((sum, d) => sum + d.interes, 0);
+                const principal = slice.reduce((sum, d) => sum + d.principal, 0);
+                const rcsdAnual = servDeuda > 0 ? (noiTotal / servDeuda) : 0;
+                const saldoCierre = slice[slice.length - 1].saldoFinal;
+
+                resumenAnual.push({ ano: a + 1, noiTotal, servDeuda, intereses, principal, rcsdAnual, saldoCierre });
+            }
+
+            const totalNoiGlobal = amortizacionData.reduce((sum, d) => sum + d.noi, 0);
+            const totalDeudaGlobal = amortizacionData.reduce((sum, d) => sum + d.pagoTotal, 0);
+            const rcsdGlobal = totalDeudaGlobal > 0 ? (totalNoiGlobal / totalDeudaGlobal) : 0;
+
+            globalModelData = {
+                P, tasaAnual, plazoContrato, amortAnos, rentaMensual, gastosPct, crecimientoAnual,
+                nombreEscenario, cuota, pagoBalloon, pctBalloon, rcsdGlobal, resumenAnual, amortizacionData
+            };
+
+            document.getElementById('kpiCuota').innerText = fmtMoney(cuota);
+            document.getElementById('kpiRcsdGlobal').innerText = fmtNum(rcsdGlobal) + 'x';
+            document.getElementById('kpiBalloon').innerText = fmtMoney(pagoBalloon);
+            document.getElementById('kpiPctBalloon').innerText = fmtNum(pctBalloon) + '%';
+
+            renderTablaAmortizacion(amortizacionData);
+            renderTablaResumenAnual(resumenAnual);
+            renderSensibilidad(resumenAnual[0].noiTotal, cuota * 12);
+            renderChartCobertura(resumenAnual);
+        }
+
+        function renderTablaAmortizacion(data) {
+            document.getElementById('tablaAmortizacion').innerHTML = data.map(d => `
+                <tr>
+                    <td class="p-2.5 text-left">${d.mes}</td>
+                    <td class="p-2.5 text-left">${d.fecha}</td>
+                    <td class="p-2.5">${fmtMoney(d.saldoInicial)}</td>
+                    <td class="p-2.5">${fmtMoney(d.interes)}</td>
+                    <td class="p-2.5">${fmtMoney(d.principal)}</td>
+                    <td class="p-2.5 font-bold text-white">${fmtMoney(d.pagoTotal)}</td>
+                    <td class="p-2.5">${fmtMoney(d.noi)}</td>
+                    <td class="p-2.5 text-emerald-400 font-bold">${fmtNum(d.rcsd)}x</td>
+                    <td class="p-2.5">${fmtMoney(d.saldoFinal)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderTablaResumenAnual(data) {
+            document.getElementById('tablaResumenAnual').innerHTML = data.map(d => `
+                <tr>
+                    <td class="p-3 text-left font-bold text-white">Año ${d.ano}</td>
+                    <td class="p-3">${fmtMoney(d.noiTotal)}</td>
+                    <td class="p-3">${fmtMoney(d.servDeuda)}</td>
+                    <td class="p-3">${fmtMoney(d.intereses)}</td>
+                    <td class="p-3">${fmtMoney(d.principal)}</td>
+                    <td class="p-3 text-emerald-400 font-bold">${fmtNum(d.rcsdAnual)}x</td>
+                    <td class="p-3 font-bold text-cyan-300">${fmtMoney(d.saldoCierre)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSensibilidad(noiAno1, servicioDeudaAno1) {
+            const beNoi = servicioDeudaAno1;
+            const caidaSoportada = ((noiAno1 - beNoi) / noiAno1) * 100;
+
+            document.getElementById('beValue').innerText = fmtMoney(beNoi);
+            document.getElementById('beSubText').innerText = `El NOI actual (${fmtMoney(noiAno1)}) soporta una caída del ${fmtNum(caidaSoportada)}% antes de que el RCSD baje de 1.0x.`;
+
+            const variaciones = [
+                { nombre: 'Pesimista', pct: -0.10 },
+                { nombre: 'Base', pct: 0.00 },
+                { nombre: 'Optimista', pct: 0.10 }
+            ];
+
+            document.getElementById('tablaSensibilidad').innerHTML = variaciones.map(v => {
+                const noiResultante = noiAno1 * (1 + v.pct);
+                const rcsd = noiResultante / servicioDeudaAno1;
+                const cf = noiResultante - servicioDeudaAno1;
+                const pctLabel = v.pct === 0 ? 'Actual' : `${v.pct > 0 ? '+' : ''}${v.pct * 100}% NOI`;
+
+                return `
+                    <tr>
+                        <td class="p-3 text-left font-bold text-white">${v.nombre}</td>
+                        <td class="p-3">${pctLabel}</td>
+                        <td class="p-3">${fmtMoney(noiResultante)}</td>
+                        <td class="p-3">${fmtMoney(servicioDeudaAno1)}</td>
+                        <td class="p-3 text-emerald-400 font-bold">${fmtNum(rcsd)}x</td>
+                        <td class="p-3 font-bold text-cyan-300">${fmtMoney(cf)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            let labels = [], rcsdValues = [];
+            for (let i = -20; i <= 20; i += 5) {
+                labels.push(`${i > 0 ? '+' : ''}${i}%`);
+                rcsdValues.push((noiAno1 * (1 + (i / 100))) / servicioDeudaAno1);
+            }
+            renderChartSensibilidad(labels, rcsdValues);
+        }
+
+        function renderChartCobertura(resumenAnual) {
+            const ctx = document.getElementById('chartCobertura').getContext('2d');
+            if (chartCoberturaInstance) chartCoberturaInstance.destroy();
+
+            chartCoberturaInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: resumenAnual.map(d => `Año ${d.ano}`),
+                    datasets: [
+                        { type: 'line', label: 'RCSD (DSCR)', data: resumenAnual.map(d => d.rcsdAnual), borderColor: '#f97316', backgroundColor: '#f97316', yAxisID: 'y1', pointRadius: 6 },
+                        { type: 'line', label: 'Servicio de Deuda', data: resumenAnual.map(d => d.servDeuda), borderColor: '#38bdf8', borderDash: [5, 5], fill: false, yAxisID: 'y' },
+                        { type: 'bar', label: 'NOI Anual', data: resumenAnual.map(d => d.noiTotal), backgroundColor: 'rgba(0, 212, 255, 0.6)', borderColor: '#00d4ff', borderWidth: 1, yAxisID: 'y' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { ticks: { color: '#cbd5e1', callback: value => '$' + value / 1000 + 'k' } },
+                        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#f97316', callback: value => value.toFixed(1) + 'x' } }
+                    }
+                }
+            });
+        }
+
+        function renderChartSensibilidad(labels, data) {
+            const ctx = document.getElementById('chartSensibilidad').getContext('2d');
+            if (chartSensibilidadInstance) chartSensibilidadInstance.destroy();
+
+            chartSensibilidadInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'RCSD (x)', data: data, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.1 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { ticks: { color: '#cbd5e1', callback: value => value.toFixed(1) + 'x' } } }
+                }
+            });
+        }
+
+        /* FUNCIONALIDAD DE DESCARGA DIRECTA EN PDF SIN VISTA PREVIA */
+        async function descargarReportePDFDirecto() {
+            if (!globalModelData) ejecutarModelo();
+
+            const d = globalModelData;
+            const hoy = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            document.getElementById('rptFechaEmision').innerText = hoy;
+            document.getElementById('rptNombreEscenario').innerText = d.nombreEscenario;
+
+            document.getElementById('rptParametrosGrid').innerHTML = `
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Monto Crédito</span><div style="font-size: 11pt; font-weight: bold;">${fmtMoney(d.P)}</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Tasa Anual</span><div style="font-size: 11pt; font-weight: bold;">${(d.tasaAnual * 100).toFixed(2)}%</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Plazo Crédito</span><div style="font-size: 11pt; font-weight: bold;">${d.plazoContrato} Meses</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Amortización</span><div style="font-size: 11pt; font-weight: bold;">${d.amortAnos} Años</div></div>
+            `;
+
+            document.getElementById('rptKpisGrid').innerHTML = `
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Cuota Mensual</span><div style="font-size: 11pt; font-weight: bold;">${fmtMoney(d.cuota)}</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">RCSD Global</span><div style="font-size: 11pt; font-weight: bold;">${fmtNum(d.rcsdGlobal)}x</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">Balloon Final</span><div style="font-size: 11pt; font-weight: bold;">${fmtMoney(d.pagoBalloon)}</div></div>
+                <div style="border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; background: #f8fafc;"><span style="font-size: 7.5pt; color: #475569;">% Balloon</span><div style="font-size: 11pt; font-weight: bold;">${fmtNum(d.pctBalloon)}%</div></div>
+            `;
+
+            const noiAno1 = d.resumenAnual[0].noiTotal;
+            const servDeudaAno1 = d.cuota * 12;
+            const caidaMax = ((noiAno1 - servDeudaAno1) / noiAno1) * 100;
+
+            document.getElementById('rptAnalisisTexto').innerHTML = `
+                La estructura evaluada presenta una sólida capacidad de pago. Con una cuota mensual estimada en <strong>${fmtMoney(d.cuota)}</strong> 
+                y un NOI estabilizado proyectado de <strong>${fmtMoney(noiAno1)}</strong> para el primer año, el proyecto refleja un 
+                <strong>RCSD de ${fmtNum(d.resumenAnual[0].rcsdAnual)}x</strong>. El flujo soporta una caída máxima del <strong>${fmtNum(caidaMax)}%</strong>.
+            `;
+
+            document.getElementById('rptTablaResumenBody').innerHTML = d.resumenAnual.map(a => `
+                <tr>
+                    <td>Año ${a.ano}</td>
+                    <td>${fmtMoney(a.noiTotal)}</td>
+                    <td>${fmtMoney(a.servDeuda)}</td>
+                    <td>${fmtMoney(a.intereses)}</td>
+                    <td>${fmtMoney(a.principal)}</td>
+                    <td style="color: #15803d; font-weight: bold;">${fmtNum(a.rcsdAnual)}x</td>
+                    <td>${fmtMoney(a.saldoCierre)}</td>
+                </tr>
+            `).join('');
+
+            const variaciones = [
+                { nombre: 'Pesimista (-10%)', pct: -0.10 },
+                { nombre: 'Base (Actual)', pct: 0.00 },
+                { nombre: 'Optimista (+10%)', pct: 0.10 }
+            ];
+
+            document.getElementById('rptTablaSensibilidadBody').innerHTML = variaciones.map(v => {
+                const noiVar = noiAno1 * (1 + v.pct);
+                const rcsd = noiVar / servDeudaAno1;
+                const cf = noiVar - servDeudaAno1;
+                return `
+                    <tr>
+                        <td><strong>${v.nombre}</strong></td>
+                        <td>${(v.pct * 100).toFixed(0)}%</td>
+                        <td>${fmtMoney(noiVar)}</td>
+                        <td>${fmtMoney(servDeudaAno1)}</td>
+                        <td style="color: #15803d; font-weight: bold;">${fmtNum(rcsd)}x</td>
+                        <td>${fmtMoney(cf)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            // GENERACIÓN DIRECTA VÍA JSPDF & HTML2CANVAS
+            const element = document.getElementById('pdfReportTemplate');
+            
+            // Renderizado en canvas
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgWidth = 210; 
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+            
+            // Descarga directa sin abrir ventana previa
+            pdf.save(`Reporte_Financiero_${d.nombreEscenario.replace(/\s+/g, '_')}.pdf`);
+        }
+
+        window.onload = () => ejecutarModelo();
+    </script>
+</body>
+</html>

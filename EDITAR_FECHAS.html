@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestor de Registros, Etapas y Fechas - BBVA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <!-- Librerías para Gráficos y PDF -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --bbva-blue: #004481; 
+      --bbva-light-blue: #009ee3; 
+      --bbva-navy: #072146;
+      --primary: #1e1b4b;
+      --secondary: #3b82f6;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+    body {
+      background: radial-gradient(circle at 50% 30%, #00d2ff 0%, #0052d4 40%, #030b1e 90%) !important;
+      background-attachment: fixed !important;
+      color: #ffffff;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 20px;
+      padding-bottom: 120px;
+    }
+
+    /* Fondo Balones Flotantes */
+    .background-balls {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 0; opacity: 1;
+    }
+
+    .ball {
+      position: absolute; top: 100vh;
+      background-size: contain; background-position: center; background-repeat: no-repeat;
+      opacity: 0.85; filter: drop-shadow(0 0 14px rgba(0, 242, 254, 0.8));
+      animation-name: floatDiagonal; animation-iteration-count: infinite; animation-timing-function: linear; animation-fill-mode: backwards;
+    }
+
+    .ball:nth-child(1) { background-image: url('balon.avif'); left: 2%; width: 110px; height: 110px; animation-duration: 10s; animation-delay: 0s; }
+    .ball:nth-child(2) { background-image: url('balon_2.avif'); left: 10%; width: 150px; height: 150px; animation-duration: 14s; animation-delay: 3s; }
+    .ball:nth-child(3) { background-image: url('balon_3.avif'); left: 18%; width: 90px; height: 90px; animation-duration: 9s; animation-delay: 1s; }
+    .ball:nth-child(4) { background-image: url('balon_4.avif'); left: 26%; width: 170px; height: 170px; animation-duration: 16s; animation-delay: 5s; }
+    .ball:nth-child(5) { background-image: url('balon_5.avif'); left: 34%; width: 120px; height: 120px; animation-duration: 11s; animation-delay: 2s; }
+    .ball:nth-child(6) { background-image: url('balon_6.avif'); left: 42%; width: 180px; height: 180px; animation-duration: 17s; animation-delay: 4s; }
+    .ball:nth-child(7) { background-image: url('balon_7.avif'); left: 50%; width: 100px; height: 100px; animation-duration: 8.5s; animation-delay: 0.5s; }
+    .ball:nth-child(8) { background-image: url('balon_8.avif'); left: 58%; width: 160px; height: 160px; animation-duration: 13s; animation-delay: 2.5s; }
+    .ball:nth-child(9) { background-image: url('balon_9.avif'); left: 66%; width: 130px; height: 130px; animation-duration: 15s; animation-delay: 1.5s; }
+    .ball:nth-child(10) { background-image: url('balon_10.avif'); left: 74%; width: 175px; height: 175px; animation-duration: 18s; animation-delay: 3.5s; }
+    .ball:nth-child(11) { background-image: url('balon_11.avif'); left: 82%; width: 115px; height: 115px; animation-duration: 10.5s; animation-delay: 4.5s; }
+    .ball:nth-child(12) { background-image: url('balon_12.avif'); left: 88%; width: 140px; height: 140px; animation-duration: 12s; animation-delay: 1s; }
+    .ball:nth-child(13) { background-image: url('balon_13.avif'); left: 93%; width: 95px; height: 95px; animation-duration: 9.5s; animation-delay: 6s; }
+
+    @keyframes floatDiagonal {
+      0% { transform: translateY(10vh) translateX(0) rotate(0deg); }
+      100% { transform: translateY(-130vh) translateX(120px) rotate(360deg); }
+    }
+
+    .bg-ambient-glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 1000px; height: 600px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, rgba(0, 82, 212, 0.08) 50%, rgba(0,0,0,0) 80%);
+      pointer-events: none; z-index: 1;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 10;
+    }
+
+    .glass-card {
+      background: rgba(3, 11, 30, 0.75) !important;
+      border: 1px solid rgba(0, 212, 255, 0.3) !important;
+      backdrop-filter: blur(14px) !important;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .header-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    h1, h2 { margin: 0; color: #00d4ff; font-weight: 800; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+
+    input[type="text"], input[type="datetime-local"] {
+      padding: 10px 14px;
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      background: rgba(2, 6, 23, 0.8);
+      color: #ffffff;
+    }
+
+    input:focus {
+      border-color: #00d4ff;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .input-search { width: 100%; box-sizing: border-box; font-size: 15px; }
+
+    button {
+      background: linear-gradient(135deg, #00d4ff, #0052d4);
+      color: white; border: none; padding: 10px 18px; border-radius: 8px;
+      cursor: pointer; font-weight: 600; transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 0 25px rgba(0, 212, 255, 0.7); }
+    .btn-pdf { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .btn-pdf:hover { box-shadow: 0 0 25px rgba(239, 68, 68, 0.7); }
+    .btn-edit { background: linear-gradient(135deg, #10b981, #059669); padding: 6px 12px; font-size: 13px; }
+
+    .table-container {
+      overflow-x: auto;
+      max-height: 580px;
+      border-radius: 12px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid rgba(0, 212, 255, 0.15); }
+    th {
+      background-color: rgba(7, 33, 70, 0.95);
+      color: #00d4ff; position: sticky; top: 0; z-index: 10;
+      font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;
+    }
+    tr:nth-child(even) { background-color: rgba(0, 82, 212, 0.08); }
+    tr:hover { background-color: rgba(0, 212, 255, 0.15); }
+
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: rgba(3, 11, 30, 0.95); border: 1px solid rgba(0, 212, 255, 0.4);
+      padding: 24px; border-radius: 16px; width: 100%; max-width: 650px;
+      max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: white;
+    }
+    .modal h2 { margin-top: 0; color: #00d4ff; border-bottom: 2px solid rgba(0, 212, 255, 0.2); padding-bottom: 10px; }
+    .grid-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .field-full { grid-column: span 2; }
+    .field label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 12px; color: #94a3b8; }
+    .field input { width: 100%; box-sizing: border-box; padding: 8px; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .btn-cancel { background: #64748b; }
+
+    .loading { text-align: center; padding: 25px; color: #94a3b8; font-size: 15px; }
+
+    /* Tarjetas KPI */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .kpi-card { background: rgba(7, 33, 70, 0.6); border: 1px solid rgba(0, 212, 255, 0.25); padding: 16px; border-radius: 12px; text-align: center; }
+    .kpi-value { font-size: 1.8rem; font-weight: 800; color: #00d4ff; margin-top: 5px; }
+    .kpi-title { font-size: 0.85rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .chart-box { position: relative; height: 320px; width: 100%; }
+
+    /* REGLAS Y ESTILOS DE IMPRESIÓN PARA PDF LIMPIO CORPORATIVO BBVA */
+    .pdf-page-break { page-break-before: always; margin-top: 15px; }
+    .pdf-avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
+
+    .pdf-header {
+      display: none;
+      border-bottom: 3px solid #0284c7;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    /* ESTILOS APLICADOS EXCLUSIVAMENTE DURANTE LA GENERACIÓN DEL PDF */
+    body.rendering-pdf {
+      background: #ffffff !important;
+      color: #0f172a !important;
+    }
+    body.rendering-pdf .no-print { display: none !important; }
+    body.rendering-pdf .pdf-header { display: block !important; }
+    
+    body.rendering-pdf .glass-card {
+      background: #ffffff !important;
+      border: 1px solid #cbd5e1 !important;
+      backdrop-filter: none !important;
+      box-shadow: none !important;
+      margin-bottom: 15px !important;
+      padding: 12px !important;
+      border-radius: 8px !important;
+    }
+
+    body.rendering-pdf h1 { color: #0369a1 !important; }
+    body.rendering-pdf h2 { color: #0284c7 !important; border-left: 3px solid #0284c7; padding-left: 6px; }
+
+    body.rendering-pdf .table-container { 
+      max-height: none !important; 
+      overflow: visible !important; 
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 6px !important;
+    }
+
+    body.rendering-pdf table { 
+      font-size: 9px !important; 
+      width: 100% !important;
+      background: #ffffff !important;
+    }
+
+    body.rendering-pdf th {
+      background-color: #f1f5f9 !important;
+      color: #334155 !important;
+      font-weight: 800 !important;
+      padding: 6px 6px !important;
+      border-bottom: 2px solid #0284c7 !important;
+      font-size: 9px !important;
+    }
+
+    body.rendering-pdf td { 
+      padding: 6px 6px !important;
+      color: #334155 !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    body.rendering-pdf tr:nth-child(even) {
+      background-color: #f8fafc !important;
+    }
+
+    body.rendering-pdf .chart-box {
+      height: 200px !important;
+      width: 100% !important;
+    }
+
+    body.rendering-pdf .kpi-grid {
+      gap: 10px !important;
+      margin-bottom: 15px !important;
+    }
+
+    body.rendering-pdf .kpi-card {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 10px !important;
+      border-radius: 8px !important;
+    }
+
+    body.rendering-pdf .kpi-title {
+      color: #64748b !important;
+      font-size: 0.75rem !important;
+      font-weight: 700 !important;
+    }
+
+    body.rendering-pdf .kpi-value {
+      color: #0284c7 !important;
+      font-size: 1.3rem !important;
+    }
+
+    body.rendering-pdf #analysisSummaryText {
+      color: #334155 !important;
+      font-size: 11px !important;
+    }
+
+    /* Estilos del Robot */
+    .bbva-character-container {
+      position: fixed; bottom: 20px; right: 20px; display: flex;
+      flex-direction: column; align-items: center; z-index: 100; width: 100px;
+    }
+    .robot-body-wrapper {
+      width: 90px; height: 125px; position: relative;
+      display: flex; flex-direction: column; align-items: center;
+      animation: levitate 3.5s infinite ease-in-out;
+    }
+    @keyframes levitate { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .robot-head {
+      width: 56px; height: 44px; background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%);
+      border: 3px solid var(--bbva-blue); border-radius: 16px; position: relative;
+      display: flex; justify-content: center; align-items: center; z-index: 5;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.25), inset -2px -2px 6px rgba(0,0,0,0.1);
+    }
+    .robot-eyes-container { display: flex; gap: 8px; }
+    .robot-eye { 
+      width: 9px; height: 9px; background: #00e5ff; border-radius: 50%; 
+      transition: all 0.12s ease-in-out; box-shadow: 0 0 10px #00e5ff, 0 0 4px rgba(0, 229, 255, 0.6);
+    }
+    .robot-eye.blink { height: 2px; border-radius: 2px; margin-top: 3.5px; background: #64748b; box-shadow: none; }
+    .robot-antenna { position: absolute; top: -14px; width: 4px; height: 14px; background: linear-gradient(to top, var(--bbva-blue), var(--bbva-light-blue)); left: calc(50% - 2px); }
+    .robot-antenna::before { content: ''; position: absolute; top: -7px; left: -4px; width: 12px; height: 12px; background: #00e5ff; border-radius: 50%; box-shadow: 0 0 12px #00e5ff; }
+    .robot-neck { width: 16px; height: 6px; background: linear-gradient(to right, #94a3b8, #cbd5e1, #64748b); border: 2px solid var(--bbva-blue); margin-top: -2px; z-index: 4; }
+    .robot-torso {
+      width: 64px; height: 54px; background: radial-gradient(circle at 30% 30%, var(--bbva-blue) 0%, var(--bbva-navy) 80%);
+      border: 3px solid var(--bbva-light-blue); border-radius: 14px; position: relative; z-index: 3; display: flex; justify-content: center; align-items: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.2);
+    }
+    .robot-screen {
+      width: 42px; height: 28px; background: #090d16; border: 1.5px solid #00e5ff; border-radius: 6px;
+      display: flex; justify-content: center; align-items: center; color: #00e5ff; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.8px; text-shadow: 0 0 5px #00e5ff; box-shadow: inset 0 0 6px rgba(0, 229, 255, 0.3);
+    }
+    .robot-arm { width: 11px; height: 38px; background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%); border: 2px solid var(--bbva-blue); border-radius: 8px; position: absolute; top: 52px; z-index: 2; box-shadow: 0 4px 6px rgba(0,0,0,0.15); }
+    .robot-arm.left { left: -8px; transform-origin: top center; }
+    .robot-arm.right { right: -8px; transform-origin: top center; transition: transform 0.3s ease; }
+    .robot-arm.right.wave-active { animation: waveHand 1.5s ease-in-out infinite; }
+    @keyframes waveHand { 
+      0%, 100% { transform: rotate(0deg); } 
+      25% { transform: rotate(-130deg) translateY(-2px); } 
+      50% { transform: rotate(-100deg) translateY(-2px); } 
+      75% { transform: rotate(-130deg) translateY(-2px); } 
+    }
+    .robot-thruster { width: 26px; height: 10px; background: linear-gradient(to right, #64748b, #cbd5e1, #475569); border: 2px solid var(--bbva-blue); border-radius: 0 0 10px 10px; margin-top: -2px; position: relative; }
+    .robot-thruster::after { content: ''; position: absolute; bottom: -8px; left: 5px; width: 12px; height: 8px; background: linear-gradient(to bottom, #00e5ff, rgba(0, 229, 255, 0.4), transparent); border-radius: 50%; animation: thrust 0.15s infinite alternate; filter: drop-shadow(0 0 6px #00e5ff); }
+    @keyframes thrust { from { height: 5px; opacity: 0.7; } to { height: 10px; opacity: 1; } }
+
+    .bbva-speech-bubble {
+      position: absolute; bottom: 145px; right: -10px; background: #ffffff; color: var(--bbva-navy);
+      padding: 12px 18px; border-radius: 14px; font-size: 0.88rem; font-weight: bold; width: 230px;
+      text-align: center; opacity: 0; transform: translateY(10px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; z-index: 105;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3); border: 1px solid #e2e8f0; line-height: 1.4; white-space: normal;
+    }
+    .bbva-speech-bubble.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .bbva-speech-bubble::after { content: ''; position: absolute; bottom: -7px; right: 48px; border-width: 8px 8px 0; border-style: solid; border-color: #ffffff transparent; display: block; width: 0; }
+  </style>
+</head>
+<body>
+
+  <!-- FONDO BALONES FLOTANTES -->
+  <div class="background-balls no-print">
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div><div class="ball"></div><div class="ball"></div>
+    <div class="ball"></div>
+  </div>
+
+  <div class="bg-ambient-glow no-print"></div>
+
+<div class="container" id="reportArea">
+  
+  <!-- Encabezado corporativo exclusivo para PDF con estilo limpio BBVA -->
+  <div class="pdf-header">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td>
+          <h1 style="font-size: 18px; font-weight: bold; color: #0369a1; text-transform: uppercase; margin: 0; line-height: 1.2;">Informe Ejecutivo de Eficiencia y Tiempos por Etapa</h1>
+          <p style="font-size: 10px; color: #64748b; margin-top: 3px; line-height: 1.2;">Vertical de Financiamiento - Consolidado Operativo y Analítico de Procesamiento</p>
+        </td>
+        <td style="text-align: right; vertical-align: top;">
+          <span style="font-size: 9px; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; display: inline-block;">BBVA CORPORATIVO</span>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="glass-card pdf-avoid-break">
+    <div class="header-box">
+      <h1>Gestor de Registros, Etapas y Fechas</h1>
+      <div class="flex gap-2 no-print">
+        <button class="btn-pdf" onclick="exportarPDF()">📄 Exportar Análisis a PDF</button>
+        <button onclick="cargarDatos()">🔄 Recargar Tabla</button>
+      </div>
+    </div>
+
+    <div class="no-print">
+      <input type="text" id="searchFilter" class="input-search" placeholder="🔍 Buscar por Usuario M o Fechas..." oninput="filtrarTabla()">
+    </div>
+  </div>
+
+  <!-- TABLA DE REGISTROS -->
+  <div class="glass-card pdf-avoid-break" style="padding: 0;">
+    <div class="table-container">
+      <table id="dataTable">
+        <thead>
+          <tr id="tableHeader">
+            <th class="no-print">Acción</th>
+            <th>Cargando encabezados...</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="25" class="loading">⏳ Cargando usuarios y etapas desde la hoja de cálculo...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SECCIÓN DE ANÁLISIS Y GRÁFICOS CON SEPARACIÓN Y CONTROL DE CORTE -->
+  <div id="analyticsSection">
+    
+    <!-- SALTO DE PÁGINA ANTES DE EMPEZAR LOS GRÁFICOS -->
+    <div class="pdf-page-break"></div>
+
+    <!-- Indicadores Principales (KPIs) -->
+    <div class="kpi-grid pdf-avoid-break">
+      <div class="kpi-card">
+        <div class="kpi-title">Usuarios Evaluados</div>
+        <div class="kpi-value" id="kpiTotalUsers">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Tiempo Promedio Total</div>
+        <div class="kpi-value" id="kpiAvgTotalTime">0 min</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Etapa Más Lenta</div>
+        <div class="kpi-value" id="kpiSlowestStage" style="font-size: 1rem; padding-top: 8px;">-</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Etapa Más Rápida</div>
+        <div class="kpi-value" id="kpiFastestStage" style="font-size: 1rem; padding-top: 8px;">-</div>
+      </div>
+    </div>
+
+    <!-- Gráficos Principales -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+      <div class="glass-card pdf-avoid-break">
+        <h2 class="mb-3 text-base">⏱️ Tiempo Promedio por Etapa (Minutos)</h2>
+        <div class="chart-box">
+          <canvas id="chartAvgStage"></canvas>
+        </div>
+      </div>
+
+      <div class="glass-card pdf-avoid-break">
+        <h2 class="mb-3 text-base">📊 Distribución de Tiempos Totales por Usuario</h2>
+        <div class="chart-box">
+          <canvas id="chartUserTotal"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALTO DE PÁGINA PARA EL GRÁFICO APILADO Y EL RESUMEN -->
+    <div class="pdf-page-break"></div>
+
+    <div class="glass-card mb-5 pdf-avoid-break">
+      <h2 class="mb-3 text-base">📈 Detalle Comparativo de Tiempos por Etapa y Usuario</h2>
+      <div class="chart-box">
+        <canvas id="chartStackedStage"></canvas>
+      </div>
+    </div>
+
+    <!-- Informe Ejecutivo Narrativo -->
+    <div class="glass-card pdf-avoid-break">
+      <h2 class="mb-2 text-base">📝 Resumen del Análisis Operativo</h2>
+      <p id="analysisSummaryText" class="text-slate-300 text-xs leading-relaxed">
+        Cargando análisis detallado de los datos...
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal para Editar Fecha y Hora -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>Editar Registro: <span id="lblUsuario"></span></h2>
+    <form id="editForm" onsubmit="guardarCambios(event)">
+      <input type="hidden" id="editUsuarioId">
+      
+      <div class="grid-fields">
+        <div class="field field-full">
+          <label>Fecha Creación Inicial:</label>
+          <input type="datetime-local" id="fieldCreacionInicial">
+        </div>
+
+        <div class="field"><label>1. Solicitud del cliente:</label><input type="datetime-local" class="etapa-input" data-index="0"></div>
+        <div class="field"><label>2. Solicitud de proyecciones:</label><input type="datetime-local" class="etapa-input" data-index="1"></div>
+        <div class="field"><label>3. Entrega de proyecciones:</label><input type="datetime-local" class="etapa-input" data-index="2"></div>
+        <div class="field"><label>4. Envío a riesgos:</label><input type="datetime-local" class="etapa-input" data-index="3"></div>
+        <div class="field"><label>5. Primer contraste:</label><input type="datetime-local" class="etapa-input" data-index="4"></div>
+        <div class="field"><label>6. Segundo contraste:</label><input type="datetime-local" class="etapa-input" data-index="5"></div>
+        <div class="field"><label>7. Tercer contraste:</label><input type="datetime-local" class="etapa-input" data-index="6"></div>
+        <div class="field"><label>8. Cuarto contraste:</label><input type="datetime-local" class="etapa-input" data-index="7"></div>
+        <div class="field"><label>9. Sanción:</label><input type="datetime-local" class="etapa-input" data-index="8"></div>
+        <div class="field"><label>10. Contratación:</label><input type="datetime-local" class="etapa-input" data-index="9"></div>
+        <div class="field field-full"><label>11. Desembolso:</label><input type="datetime-local" class="etapa-input" data-index="10"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+        <button type="submit" id="btnGuardar">Guardar y Recalcular Minutos</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ROBOT BBVA -->
+<div class="bbva-character-container no-print">
+  <div class="bbva-speech-bubble" id="robotBubble">¡Hola! Edita las fechas y recalcula los minutos ⏱️</div>
+  
+  <div class="robot-body-wrapper">
+    <div class="robot-antenna"></div>
+    <div class="robot-head">
+      <div class="robot-eyes-container">
+        <div class="robot-eye eye-l"></div>
+        <div class="robot-eye eye-r"></div>
+      </div>
+    </div>
+    <div class="robot-neck"></div>
+    <div class="robot-torso">
+      <div class="robot-screen">L-EASY</div>
+    </div>
+    <div class="robot-arm left"></div>
+    <div class="robot-arm right" id="rightArm"></div>
+    <div class="robot-thruster"></div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcd1rUrSFxWkWuSS7O_eTi49_5F09ZVB1nT2clUZT1ubsOfjc_iLu8wnPVNpilgTjppQ/exec";
+
+  let rawSheetData = [];
+  let chartAvgStageInstance = null;
+  let chartUserTotalInstance = null;
+  let chartStackedStageInstance = null;
+
+  const nombresEtapas = [
+    "1. Solicitud cliente", "2. Solicitud proy.", "3. Entrega proy.",
+    "4. Envío a riesgos", "5. Primer contraste", "6. Segundo contraste",
+    "7. Tercer contraste", "8. Cuarto contraste", "9. Sanción",
+    "10. Contratación", "11. Desembolso"
+  ];
+
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarDatos();
+  });
+
+  async function cargarDatos() {
+    const tableBody = document.getElementById("tableBody");
+    tableBody.innerHTML = '<tr><td colspan="25" class="loading">⏳ Cargando datos de la hoja de cálculo...</td></tr>';
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ action: "obtenerTodosLosDatos" })
+      });
+
+      const result = await response.json();
+
+      if (result.status === "success") {
+        rawSheetData = result.datos;
+        renderTabla(rawSheetData);
+        procesarYRenderizarAnalisis(rawSheetData);
+      } else {
+        alert("Error al cargar los datos: " + result.message);
+      }
+    } catch (error) {
+      alert("Error al conectar con Google Sheets.");
+      console.error(error);
+    }
+  }
+
+  function renderTabla(data) {
+    const headerRow = document.getElementById("tableHeader");
+    const bodyContainer = document.getElementById("tableBody");
+
+    headerRow.innerHTML = '<th class="no-print">Acción</th>';
+    bodyContainer.innerHTML = "";
+
+    if (!data || data.length === 0) {
+      bodyContainer.innerHTML = '<tr><td colspan="10" class="loading">No hay datos registrados en la hoja.</td></tr>';
+      return;
+    }
+
+    const headers = data[0];
+    headers.forEach(h => {
+      headerRow.innerHTML += `<th>${h}</th>`;
+    });
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const usuario = row[0];
+      if (!usuario) continue;
+
+      const tr = document.createElement("tr");
+      let actionTd = `<td class="no-print"><button class="btn-edit" onclick="abrirModalEdicion(${i})">✏️ Editar</button></td>`;
+      tr.innerHTML = actionTd;
+
+      row.forEach(cell => {
+        tr.innerHTML += `<td>${cell !== undefined ? cell : ''}</td>`;
+      });
+
+      bodyContainer.appendChild(tr);
+    }
+  }
+
+  function filtrarTabla() {
+    const filter = document.getElementById("searchFilter").value.toUpperCase();
+    const rows = document.getElementById("tableBody").getElementsByTagName("tr");
+
+    for (let i = 0; i < rows.length; i++) {
+      let text = rows[i].textContent || rows[i].innerText;
+      rows[i].style.display = text.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+    }
+
+    const indicesVisibles = [0];
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].style.display !== "none") {
+        indicesVisibles.push(i + 1);
+      }
+    }
+    const datosFiltrados = rawSheetData.filter((_, idx) => indicesVisibles.includes(idx));
+    procesarYRenderizarAnalisis(datosFiltrados);
+  }
+
+  /* ANÁLISIS Y GRÁFICOS */
+  function procesarYRenderizarAnalisis(data) {
+    if (!data || data.length <= 1) return;
+
+    const usuarios = [];
+    const tiemposPorEtapa = Array(11).fill(0).map(() => []);
+    const tiemposTotalesUsuario = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const usuario = row[0];
+      if (!usuario) continue;
+
+      usuarios.push(usuario);
+      let acumuladoUsuario = 0;
+
+      for (let stageIdx = 0; stageIdx < 11; stageIdx++) {
+        const colMinutosIdx = 3 + (stageIdx * 2);
+        const valorMinutos = parseFloat(row[colMinutosIdx]) || 0;
+        tiemposPorEtapa[stageIdx].push(valorMinutos);
+        acumuladoUsuario += valorMinutos;
+      }
+
+      tiemposTotalesUsuario.push(acumuladoUsuario);
+    }
+
+    const promediosEtapas = tiemposPorEtapa.map(arr => {
+      if (arr.length === 0) return 0;
+      const suma = arr.reduce((a, b) => a + b, 0);
+      return Math.round(suma / arr.length);
+    });
+
+    const totalPromedioGral = tiemposTotalesUsuario.length > 0 
+      ? Math.round(tiemposTotalesUsuario.reduce((a, b) => a + b, 0) / tiemposTotalesUsuario.length) 
+      : 0;
+
+    let maxStageVal = -1, minStageVal = Infinity;
+    let maxStageIdx = 0, minStageIdx = 0;
+
+    promediosEtapas.forEach((val, idx) => {
+      if (val > maxStageVal) { maxStageVal = val; maxStageIdx = idx; }
+      if (val < minStageVal && val >= 0) { minStageVal = val; minStageIdx = idx; }
+    });
+
+    document.getElementById("kpiTotalUsers").innerText = usuarios.length;
+    document.getElementById("kpiAvgTotalTime").innerText = `${totalPromedioGral} min`;
+    document.getElementById("kpiSlowestStage").innerText = `${nombresEtapas[maxStageIdx]} (${maxStageVal}m)`;
+    document.getElementById("kpiFastestStage").innerText = `${nombresEtapas[minStageIdx]} (${minStageVal}m)`;
+
+    const textoResumen = `En el grupo de ${usuarios.length} usuario(s) analizado(s), el tiempo promedio total de atención del flujo completo es de <strong>${totalPromedioGral} minutos</strong>. La etapa con mayor cuello de botella es <strong>"${nombresEtapas[maxStageIdx]}"</strong> con un promedio de <strong>${maxStageVal} minutos</strong>. La fase más expedita corresponde a <strong>"${nombresEtapas[minStageIdx]}"</strong> con <strong>${minStageVal} minutos</strong>.`;
+    document.getElementById("analysisSummaryText").innerHTML = textoResumen;
+
+    renderGraficos(nombresEtapas, promediosEtapas, usuarios, tiemposTotalesUsuario, tiemposPorEtapa);
+  }
+
+  function renderGraficos(labelsEtapas, promediosEtapas, usuarios, tiemposTotalesUsuario, tiemposPorEtapa) {
+    const isPDF = document.body.classList.contains('rendering-pdf');
+    
+    // Paleta limpia BBVA para PDF vs Oscura para Web
+    const colorTexto = isPDF ? '#334155' : '#94a3b8';
+    const colorGrid = isPDF ? '#e2e8f0' : 'rgba(0, 212, 255, 0.1)';
+    const colorBarraPrincipal = isPDF ? '#0284c7' : 'rgba(0, 212, 255, 0.6)';
+    const colorBordeBarra = isPDF ? '#0369a1' : '#00d4ff';
+    const colorLinea = isPDF ? '#0284c7' : '#3b82f6';
+    const colorRellenoLinea = isPDF ? 'rgba(2, 132, 199, 0.1)' : 'rgba(59, 130, 246, 0.2)';
+
+    Chart.defaults.color = colorTexto;
+    Chart.defaults.borderColor = colorGrid;
+
+    if (chartAvgStageInstance) chartAvgStageInstance.destroy();
+    const ctx1 = document.getElementById('chartAvgStage').getContext('2d');
+    chartAvgStageInstance = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: labelsEtapas,
+        datasets: [{
+          label: 'Minutos Promedio',
+          data: promediosEtapas,
+          backgroundColor: colorBarraPrincipal,
+          borderColor: colorBordeBarra,
+          borderWidth: 1,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    if (chartUserTotalInstance) chartUserTotalInstance.destroy();
+    const ctx2 = document.getElementById('chartUserTotal').getContext('2d');
+    chartUserTotalInstance = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: usuarios,
+        datasets: [{
+          label: 'Tiempo Total (min)',
+          data: tiemposTotalesUsuario,
+          backgroundColor: colorRellenoLinea,
+          borderColor: colorLinea,
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointBackgroundColor: colorBordeBarra
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    if (chartStackedStageInstance) chartStackedStageInstance.destroy();
+    const ctx3 = document.getElementById('chartStackedStage').getContext('2d');
+
+    // Nueva paleta de 11 colores distintivos con alto contraste para diferenciar las etapas claramente
+    const paletaColores = [
+      '#e11d48', // 1. Solicitud cliente - Rojo rosa
+      '#f97316', // 2. Solicitud proy. - Naranja
+      '#eab308', // 3. Entrega proy. - Amarillo
+      '#10b981', // 4. Envío a riesgos - Verde Esmeralda
+      '#06b6d4', // 5. Primer contraste - Cyan
+      '#2563eb', // 6. Segundo contraste - Azul Cobalto
+      '#8b5cf6', // 7. Tercer contraste - Violeta
+      '#d946ef', // 8. Cuarto contraste - Fuchsia
+      '#f43f5e', // 9. Sanción - Coral
+      '#14b8a6', // 10. Contratación - Teal
+      '#64748b'  // 11. Desembolso - Pizarra
+    ];
+
+    const datasetsApilados = labelsEtapas.map((etapaNombre, i) => ({
+      label: etapaNombre,
+      data: tiemposPorEtapa[i],
+      backgroundColor: paletaColores[i % paletaColores.length]
+    }));
+
+    chartStackedStageInstance = new Chart(ctx3, {
+      type: 'bar',
+      data: {
+        labels: usuarios,
+        datasets: datasetsApilados
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 }, color: colorTexto } }
+        },
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  /* EXPORTACIÓN PDF DE ALTA CALIDAD Y ALINEACIÓN CONTROLADA */
+  function exportarPDF() {
+    const element = document.getElementById('reportArea');
+
+    Swal.fire({
+      title: 'Generando PDF BBVA',
+      text: 'Aplicando formato corporativo y adaptando gráficos...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    // Cambiar estilos a modo de impresión corporativo limpio
+    document.body.classList.add('rendering-pdf');
+
+    // Re-renderizar gráficos con colores limpios aptos para impresión en hoja blanca
+    if (rawSheetData && rawSheetData.length > 1) {
+      procesarYRenderizarAnalisis(rawSheetData);
+    }
+
+    // Redimensionar canvas activamente antes de capturar
+    if (chartAvgStageInstance) chartAvgStageInstance.resize();
+    if (chartUserTotalInstance) chartUserTotalInstance.resize();
+    if (chartStackedStageInstance) chartStackedStageInstance.resize();
+
+    const opt = {
+      margin:       [0.3, 0.3, 0.3, 0.3],
+      filename:     `Reporte_Ejecutivo_Operaciones_BBVA_${new Date().toISOString().slice(0,10)}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { 
+        scale: 2, 
+        useCORS: true, 
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' },
+      pagebreak:    { mode: ['css', 'legacy'] }
+    };
+
+    setTimeout(() => {
+      html2pdf().set(opt).from(element).save().then(() => {
+        document.body.classList.remove('rendering-pdf');
+        if (rawSheetData && rawSheetData.length > 1) {
+          procesarYRenderizarAnalisis(rawSheetData);
+        }
+        if (chartAvgStageInstance) chartAvgStageInstance.resize();
+        if (chartUserTotalInstance) chartUserTotalInstance.resize();
+        if (chartStackedStageInstance) chartStackedStageInstance.resize();
+        Swal.close();
+      }).catch(err => {
+        document.body.classList.remove('rendering-pdf');
+        if (rawSheetData && rawSheetData.length > 1) {
+          procesarYRenderizarAnalisis(rawSheetData);
+        }
+        Swal.fire('Error', 'Hubo un inconveniente al exportar el PDF.', 'error');
+        console.error(err);
+      });
+    }, 500);
+  }
+
+  function parseToInputDateTime(str) {
+    if (!str || typeof str !== 'string') return "";
+    const parts = str.split(" ");
+    if (parts.length < 2) return "";
+    const dateParts = parts[0].split("/");
+    if (dateParts.length < 3) return "";
+    const dateFormatted = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
+    const timeFormatted = parts[1].substring(0, 5);
+    return `${dateFormatted}T${timeFormatted}`;
+  }
+
+  function parseToSheetDateTime(str) {
+    if (!str) return "";
+    const [dateStr, timeStr] = str.split("T");
+    if (!dateStr || !timeStr) return "";
+    const [yyyy, mm, dd] = dateStr.split("-");
+    return `${dd}/${mm}/${yyyy} ${timeStr}:00`;
+  }
+
+  function abrirModalEdicion(rowIndex) {
+    const row = rawSheetData[rowIndex];
+    document.getElementById("lblUsuario").innerText = row[0];
+    document.getElementById("editUsuarioId").value = row[0];
+    document.getElementById("fieldCreacionInicial").value = parseToInputDateTime(row[1]);
+
+    const inputsEtapas = document.querySelectorAll(".etapa-input");
+    inputsEtapas.forEach(input => {
+      const stageIdx = parseInt(input.getAttribute("data-index"));
+      const colFechaIndex = 2 + (stageIdx * 2); 
+      input.value = parseToInputDateTime(row[colFechaIndex]);
+    });
+
+    document.getElementById("editModal").classList.add("active");
+  }
+
+  function cerrarModal() {
+    document.getElementById("editModal").classList.remove("active");
+  }
+
+  async function guardarCambios(e) {
+    e.preventDefault();
+    const btnGuardar = document.getElementById("btnGuardar");
+    btnGuardar.disabled = true;
+    btnGuardar.innerText = "Calculando y Guardando...";
+
+    const usuario = document.getElementById("editUsuarioId").value;
+    const creacionInicial = parseToSheetDateTime(document.getElementById("fieldCreacionInicial").value);
+
+    const etapasFechas = [];
+    document.querySelectorAll(".etapa-input").forEach(input => {
+      etapasFechas.push(parseToSheetDateTime(input.value));
+    });
+
+    const payload = {
+      action: "editarUsuario",
+      usuario: usuario,
+      fechas: {
+        creacionInicial: creacionInicial,
+        etapasFechas: etapasFechas
+      }
+    };
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+
+      if (result.status === "success") {
+        alert("¡Registro actualizado y minutos recalculados con éxito!");
+        cerrarModal();
+        cargarDatos();
+      } else {
+        alert("Error al guardar: " + result.message);
+      }
+    } catch (err) {
+      alert("Error de conexión al intentar actualizar.");
+      console.error(err);
+    } finally {
+      btnGuardar.disabled = false;
+      btnGuardar.innerText = "Guardar y Recalcular Minutos";
+    }
+  }
+
+  /* Animación Robot */
+  const phrases = [
+    "¡Hola! Edita las fechas y recalcula los minutos ⏱️",
+    "Haz clic en Editar para modificar un registro ✏️",
+    "Filtra los datos con la barra de búsqueda 🔍",
+    "Revisa las gráficas inferiores para analizar cuellos de botella 📊",
+    "Exporta todo el reporte ejecutivo en PDF 📄"
+  ];
+
+  let currentPhraseIndex = 0;
+
+  function updateRobotPhrase() {
+    const bubble = document.getElementById('robotBubble');
+    if (!bubble) return;
+    bubble.classList.remove('visible');
+    setTimeout(() => {
+      bubble.innerText = phrases[currentPhraseIndex % phrases.length];
+      bubble.classList.add('visible');
+      currentPhraseIndex = (currentPhraseIndex + 1) % phrases.length;
+    }, 100);
+  }
+
+  const eyes = document.querySelectorAll('.robot-eye');
+  const rightArm = document.getElementById('rightArm');
+
+  setInterval(() => {
+    eyes.forEach(eye => eye.classList.add('blink'));
+    setTimeout(() => {
+      eyes.forEach(eye => eye.classList.remove('blink'));
+    }, 120);
+  }, 3800);
+
+  setInterval(() => {
+    if(rightArm) {
+      rightArm.classList.add('wave-active');
+      setTimeout(() => {
+        rightArm.classList.remove('wave-active');
+      }, 3000);
+    }
+  }, 7000);
+
+  setInterval(() => {
+    updateRobotPhrase();
+  }, 4500);
+</script>
+
+</body>
+</html>
